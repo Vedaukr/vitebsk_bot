@@ -6,7 +6,7 @@ dd = DupDetector()
 with open(os.path.join(base_path, "result_VID.json"), "r", encoding="utf8") as file:
     json_data = json.loads(file.read())
     chat_id = json_data["id"]
-    images = []#list(filter(lambda m: "photo" in m and "from_id" in m, json_data["messages"]))
+    images = list(filter(lambda m: "photo" in m and "from_id" in m, json_data["messages"]))
     count = 0
     for img in images:
         count += 1

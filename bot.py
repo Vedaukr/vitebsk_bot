@@ -1,47 +1,30 @@
-import telebot, random, time, os
+import telebot, random, os
 from telebot import types
 from utils.dupdetector import DupDetector
-from flask import Flask, request
+from bot_token import bot_token
 
-SIMILARITY_BITS = 10
-bot_token = os.environ["BOT_TOKEN"]
-host = os.environ["BOT_HOST"]
+bot_instance = telebot.TeleBot(token=bot_token, parse_mode=None)
 
-bot = telebot.TeleBot(bot_token, parse_mode=None)
-server = Flask(__name__) 
-
-bot.set_my_commands([
+bot_instance.set_my_commands([
     telebot.types.BotCommand("/ping", "Check if alive (debug)"),
     telebot.types.BotCommand("/get_count", "Check images count in db (debug)"),
     telebot.types.BotCommand("/get_rtf", "Получить пожилого ртфченка")
 ])
 
-try:
-    bot.set_webhook(url=f'{host}/{bot_token}')
-except Exception as e:
-    bot.remove_webhook()
-    bot.set_webhook(url=f'{host}/{bot_token}')
-
-
+SIMILARITY_BITS = 10
 dd = DupDetector(SIMILARITY_BITS)
 reply_map = {}
 media_map = {}
 
-@server.route(f'/{bot_token}', methods=['POST'])
-def getMessage():
-    print("Got new request from telegram")
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return "!", 200
-
-@bot.message_handler(content_types=['photo'])
+@bot_instance.message_handler(content_types=['photo'])
 def handle_img(message: telebot.types.Message):
     fileID = message.photo[-1].file_id
-    file_info = bot.get_file(fileID)
+    file_info = bot_instance.get_file(fileID)
     chatId = message.chat.id
 
     img_info = {
         "ext": file_info.file_path.split('.')[-1],
-        "bytes": bot.download_file(file_info.file_path)
+        "bytes": bot_instance.download_file(file_info.file_path)
     }
 
     tg_info = {
@@ -54,7 +37,7 @@ def handle_img(message: telebot.types.Message):
     if (len(sim_arr) > 0):
         reply_msg = create_message(sim_arr, chatId)
         reply_markup = get_keyboard(chatId, message.message_id, media_type="i")
-        bot_msg = bot.reply_to(message, reply_msg, reply_markup=reply_markup)
+        bot_msg = bot_instance.reply_to(message, reply_msg, reply_markup=reply_markup)
         reply_map[str(message.message_id)] = bot_msg.message_id
         media_map[str(message.message_id)] = {
             "media_info": img_info,
@@ -63,12 +46,12 @@ def handle_img(message: telebot.types.Message):
     else:
         dd.add_image(img_info, tg_info)
 
-@bot.message_handler(content_types=['video'])
+@bot_instance.message_handler(content_types=['video'])
 def handle_video(message: telebot.types.Message):
     fileID = message.video.file_id
-    file_info = bot.get_file(fileID)
+    file_info = bot_instance.get_file(fileID)
     chatId = message.chat.id
-    video = bot.download_file(file_info.file_path)
+    video = bot_instance.download_file(file_info.file_path)
 
     tg_info = {
         "msgId": message.message_id,
@@ -81,7 +64,7 @@ def handle_video(message: telebot.types.Message):
     if dup:
         reply_msg = create_message([dup], chatId)
         reply_markup = get_keyboard(chatId, message.message_id, media_type="v")
-        bot_msg = bot.reply_to(message, reply_msg, reply_markup=reply_markup)
+        bot_msg = bot_instance.reply_to(message, reply_msg, reply_markup=reply_markup)
         reply_map[str(message.message_id)] = bot_msg.message_id
         media_map[str(message.message_id)] = {
             "media_info": video,
@@ -90,42 +73,42 @@ def handle_video(message: telebot.types.Message):
     else:
         dd.add_video(video, tg_info)
 
-@bot.message_handler(content_types=['sticker'])
-def handle_stricker(message: telebot.types.Message):
+@bot_instance.message_handler(content_types=['sticker'])
+def handle_sticker(message: telebot.types.Message):
     if message.sticker.set_name == "arestovych_animated":
-        br = bot.reply_to(message, "Arestovich fanboy detected. Destroying...")
-        bot.delete_message(message.chat.id, message.message_id)
-        bot.delete_message(message.chat.id, br.message_id)
+        br = bot_instance.reply_to(message, "Arestovich fanboy detected. Destroying...")
+        bot_instance.delete_message(message.chat.id, message.message_id)
+        bot_instance.delete_message(message.chat.id, br.message_id)
 
-@bot.message_handler(commands=['ping'])
+@bot_instance.message_handler(commands=['ping'])
 def handle_ping(message: telebot.types.Message):
-    bot.reply_to(message, "Alive")
+    bot_instance.reply_to(message, "Alive")
 
-@bot.message_handler(commands=['get_rtf'])
+@bot_instance.message_handler(commands=['get_rtf'])
 def handle_rtf(message: telebot.types.Message):
     rtf_chanell_id = -1001632815403
     rtf_mes_count = 15358
     while True:
         try:
             msg_id = random.randint(0, rtf_mes_count)
-            bot.forward_message(message.chat.id, rtf_chanell_id, msg_id)
+            bot_instance.forward_message(message.chat.id, rtf_chanell_id, msg_id)
             break
         except Exception as e:
             print(e)
 
-@bot.message_handler(commands=['get_count'])
-def handle_ping(message: telebot.types.Message):
-    bot.reply_to(message, dd.get_img_count(message.chat.id))
+@bot_instance.message_handler(commands=['get_count'])
+def handle_image_count(message: telebot.types.Message):
+    bot_instance.reply_to(message, dd.get_img_count(message.chat.id))
 
-@bot.callback_query_handler(func=lambda call: True)
+@bot_instance.callback_query_handler(func=lambda call: True)
 def command_handler(call):
     qtype, chat_id, msg_id, media_type = call.data.split('|')
     bot_msg_id = reply_map[msg_id]
-    bot.delete_message(chat_id, bot_msg_id)
+    bot_instance.delete_message(chat_id, bot_msg_id)
     res = get_from_media_map(msg_id)
 
     if qtype == 'r':
-        bot.delete_message(chat_id, msg_id)
+        bot_instance.delete_message(chat_id, msg_id)
 
     if qtype == 'f' and res:
         if media_type == 'i':
@@ -162,6 +145,3 @@ def get_keyboard(chat_id, msg_id, media_type):
     keyboard.add(button_1)
     keyboard.add(button_2)
     return keyboard
-
-if __name__ == "__main__":
-    server.run(host="0.0.0.0", port=8080)
