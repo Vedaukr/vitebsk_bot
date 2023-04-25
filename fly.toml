@@ -10,6 +10,9 @@ primary_region = "waw"
   source = "vitebsk_bot"
   destination = "/app/data"
 
+[env]
+  GOOGLE_APPLICATION_CREDENTIALS = "/app/data/service-key.json"
+
 [http_service]
   internal_port = 8080
   force_https = true

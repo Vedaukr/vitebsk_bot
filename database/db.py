@@ -1,33 +1,20 @@
+from database.db_config import engine
 from database.models import Image, Video
 from sqlalchemy import select
-from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-
 
 class DbAccessor:
 
     def __init__(self, engine) -> None:
         self.engine = engine
 
-    def add_image(self, phash, msgId, chatId, authorId):
+    def add_image(self, image):
         with Session(self.engine) as session:
-            image = Image(
-                phash=phash,
-                msgId=msgId,
-                chatId=chatId,
-                authorId=authorId,
-            )
             session.add(image)
             session.commit()
 
-    def add_video(self, hash, msgId, chatId, authorId):
+    def add_video(self, video):
         with Session(self.engine) as session:
-            video = Video(
-                hash=hash,
-                msgId=msgId,
-                chatId=chatId,
-                authorId=authorId,
-            )
             session.add(video)
             session.commit()
 
@@ -41,3 +28,5 @@ class DbAccessor:
         session = Session(self.engine)
         stmt = select(Video).where(Video.chatId.in_([chatId]))
         return session.scalars(stmt)
+    
+db_accessor = DbAccessor(engine)

@@ -1,6 +1,6 @@
 import telebot, os
-from bot import bot_instance
-from bot_token import bot_token
+from import_bot import bot_instance
+from import_bot import bot_token
 from flask import Flask, request
 
 host = os.environ["BOT_HOST"]

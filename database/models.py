@@ -14,6 +14,8 @@ class Image(Base):
     msgId: Mapped[str] = mapped_column(String(64))
     authorId: Mapped[str] = mapped_column(String(64))
     chatId: Mapped[str] = mapped_column(String(64))
+    #tags: Mapped[str] = mapped_column(String(1000), nullable=True)
+    #recognizedText: Mapped[str] = mapped_column(String(1000), nullable=True)
 
     def __repr__(self) -> str:
         return f"Image(phash={self.phash!r}, msgId={self.msgId!r}, authorId={self.authorId!r}, chatId={self.chatId!r})"
