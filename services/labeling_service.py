@@ -1,4 +1,4 @@
-from services.shared import Singleton
+from utils.singleton import Singleton
 from google.cloud import vision
 from google.cloud import translate_v2 as translate
 

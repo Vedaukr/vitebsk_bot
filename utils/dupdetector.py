@@ -1,5 +1,3 @@
-from database.db_config import engine
-from database.db import db_accessor
 from PIL import Image
 
 import io

@@ -5,6 +5,7 @@ COPY utils utils/
 COPY database database/
 COPY bot bot/
 COPY services services/
+COPY settings settings/
 # I hate google api
 RUN pip install google-cloud-translate
 RUN pip install -r ./requirements.txt

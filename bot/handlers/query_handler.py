@@ -1,7 +1,6 @@
 from bot.bot_instance.bot import bot_instance
 from services.db_service import DbService
 from services.duplication_service import DuplicationService
-import random, telebot
 
 # Singletones
 dup_service = DuplicationService()
