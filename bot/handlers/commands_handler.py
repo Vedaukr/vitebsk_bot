@@ -6,21 +6,37 @@ import random, telebot
 db_service = DbService()
 label_service = LabelingService()
 
-@bot_instance.message_handler(commands=['get_img_caption'])
-def handle_ping(message: telebot.types.Message):
+@bot_instance.message_handler(commands=['get_img_labels'])
+def handle_labels(message: telebot.types.Message):
+    if handle_img_request(message):
+        img_bytes = download_img_from_telegram(message.reply_to_message)
+        labels = label_service.get_labels(img_bytes)
+        lab_msg = "\n".join(labels)
+        msg = f"Labels:\n{ lab_msg }"
+        bot_instance.reply_to(message, msg)
+
+@bot_instance.message_handler(commands=['get_img_text'])
+def handle_text(message: telebot.types.Message):
+    if handle_img_request(message):
+        img_bytes = download_img_from_telegram(message.reply_to_message)
+        texts = label_service.get_text(img_bytes)
+        text_msg = "\n".join(texts)
+        msg = f"Text:\n{ text_msg }"
+        bot_instance.reply_to(message, msg)
+
+def handle_img_request(message: telebot.types.Message) -> bool:
     if not message.reply_to_message:
         bot_instance.reply_to(message, "Use command as a reply to picture")
-    elif not message.reply_to_message.photo:
+        return False
+    if not message.reply_to_message.photo:
         bot_instance.reply_to(message, "Где картинка сука")
-    else:
-        fileID = message.reply_to_message.photo[-1].file_id
-        file_info = bot_instance.get_file(fileID)
-        img_bytes = bot_instance.download_file(file_info.file_path)
-        labels = label_service.get_labels(img_bytes)
-        text = label_service.get_text(img_bytes)
+        return False
+    return True
 
-        msg = f"Labels: \n{', '.join(labels)}\nText: \n{', '.join(text)}"
-        bot_instance.reply_to(message, msg)
+def download_img_from_telegram(message: telebot.types.Message) -> bytearray:
+    fileID = message.photo[-1].file_id
+    file_info = bot_instance.get_file(fileID)
+    return bot_instance.download_file(file_info.file_path)
 
 @bot_instance.message_handler(commands=['ping'])
 def handle_ping(message: telebot.types.Message):

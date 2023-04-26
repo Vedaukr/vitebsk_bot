@@ -1,2 +1,3 @@
 DB_NAME = "app.db"
 SQLALCHEMY_TRACK_MODIFICATIONS = True
+BOT_NAME = "vitebsk_bot"

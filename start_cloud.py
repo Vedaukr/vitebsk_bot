@@ -1,17 +1,18 @@
 import telebot, os
 from import_bot import bot_instance
 from flask import Flask, request
+from settings import BOT_NAME
 
 host = os.environ["BOT_HOST"]
-server = Flask(__name__) 
+server = Flask(__name__)
 
 try:
-    bot_instance.set_webhook(url=f'{host}/vitebsk_bot')
+    bot_instance.set_webhook(url=f'{host}/{BOT_NAME}')
 except Exception as e:
     bot_instance.remove_webhook()
-    bot_instance.set_webhook(url=f'{host}/vitebsk_bot')
+    bot_instance.set_webhook(url=f'{host}/{BOT_NAME}')
 
-@server.route('/vitebsk_bot', methods=['POST'])
+@server.route('/{BOT_NAME}', methods=['POST'])
 def getMessage():
     bot_instance.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "!", 200
