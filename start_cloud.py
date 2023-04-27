@@ -9,10 +9,11 @@ server = Flask(__name__)
 try:
     bot_instance.set_webhook(url=f'{host}/{BOT_NAME}')
 except Exception as e:
+    print(e)
     bot_instance.remove_webhook()
     bot_instance.set_webhook(url=f'{host}/{BOT_NAME}')
 
-@server.route('/{BOT_NAME}', methods=['POST'])
+@server.route(f'/{BOT_NAME}', methods=['POST'])
 def getMessage():
     bot_instance.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "!", 200
