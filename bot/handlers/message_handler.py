@@ -24,11 +24,12 @@ def img_handler(message: telebot.types.Message):
         try:
             picture_prompt = get_prompt(prompt)
             if picture_prompt:
-                bot_instance.reply_to(message, "searching...")
+                bot_reply = bot_instance.reply_to(message, "searching...")
                 img_link = search_service.get_image(picture_prompt)
-                bot_instance.send_photo(message.chat.id, img_link, caption=picture_prompt)
+                bot_instance.delete_message(bot_reply.chat.id, bot_reply.message_id)
+                bot_instance.send_photo(message.chat.id, img_link, caption=picture_prompt, reply_to_message_id=message.message_id)
         except Exception as e:
-            print(str(e))
+            print(str(e.with_traceback()))
             bot_instance.reply_to(message, "Something fucked up")
 
 @bot_instance.message_handler(commands=['clear_context'])
