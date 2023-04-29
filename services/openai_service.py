@@ -16,7 +16,8 @@ class OpenAiService(metaclass=Singleton):
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": context},
+                # disable context for now as it is way ineffective
+                # {"role": "system", "content": context},
                 {"role": "user", "content": prompt},
             ],
             temperature=0.9,
@@ -25,7 +26,7 @@ class OpenAiService(metaclass=Singleton):
             presence_penalty=0.6
         )
         self.context.append(prompt)
-        return response["choices"][0]["message"]["content"]
+        return response["choices"][0]["message"][ "content"]
 
     def clear_context(self):
         self.context = []
