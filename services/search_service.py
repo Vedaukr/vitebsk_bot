@@ -1,52 +1,31 @@
 from utils.singleton import Singleton
+from settings import BING_SUBSCRIPTION_KEY
 import requests
-import re
 import numpy as np
+from googlesearch import search
 
 class SearchService(metaclass=Singleton):
     def __init__(self):
-        self.base_url = 'https://duckduckgo.com/'
+        self.base_url = 'https://api.bing.microsoft.com/v7.0/images/search'
         self.headers = {
-            'dnt': '1',
-            'x-requested-with': 'XMLHttpRequest',
-            'accept-language': 'en-GB,en-US;q=0.8,en;q=0.6,ms;q=0.4',
-            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
-            'accept': 'application/json, text/javascript, */*; q=0.01',
-            'referer': 'https://duckduckgo.com/',
-            'authority': 'duckduckgo.com',
+            "Ocp-Apim-Subscription-Key" : BING_SUBSCRIPTION_KEY
         }
 
     def get_image(self, keywords):
         params = {
-            'q': keywords
+            'q': keywords,
+            "license": "public", 
+            "imageType": "photo",
+            "safeSearch": "Off"
         }
-        res = requests.post(self.base_url, data=params)
-        searchObj = re.search(r'vqd=([\d-]+)\&', res.text, re.M | re.I)
-
-        if not searchObj:
-            raise Exception("Token Parsing Failed !")
-        
-        params = (
-            ('l', 'wt-wt'),
-            ('o', 'json'),
-            ('q', keywords),
-            ('vqd', searchObj.group(1)),
-            ('f', ',,,'),
-            ('p', '2')
-        )
-
-        requestUrl = f"{self.base_url}/i.js"
-        res = requests.get(requestUrl, headers=self.headers, params=params)
-
-        if not res.ok:
-            raise Exception(res.status_code)
-        
-        data = res.json()
-        obj = np.random.choice(data["results"])
-        return obj['image']
-
-
-    # def get_image(self, obj):
-    #     img_link = obj['image']
-    #     return requests.get(img_link).content
+        response = requests.get(self.base_url, headers=self.headers, params=params)
+        response.raise_for_status()
+        search_results = response.json()
+        return np.random.choice(search_results["value"])["contentUrl"]
+    
+    def get_search_results(self, search_prompt, site, res_count=5):
+        query = f"{search_prompt}"
+        if site:
+            query = f"{query} site: {site}"
+        return search(query, num=res_count, stop=res_count, pause=1)
 

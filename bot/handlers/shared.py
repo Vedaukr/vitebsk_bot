@@ -3,7 +3,7 @@ import telebot
 def create_message(sim_arr, chat_id):
     
     # fix this smh
-    chat_id = abs(chat_id) % 10 ** 10
+    chat_id = normalize_tg_chat_id(chat_id)
     
     res = "I've found some similar memes:\n"
     for sim in sim_arr:
@@ -23,3 +23,6 @@ def get_keyboard(chat_id, msg_id):
     keyboard.add(button_1)
     keyboard.add(button_2)
     return keyboard
+
+def normalize_tg_chat_id(chat_id):
+    return abs(chat_id) % 10 ** 10
