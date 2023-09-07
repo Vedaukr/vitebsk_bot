@@ -12,3 +12,6 @@ google-cloud-vision
 google-cloud-language
 google==3.0.0
 numpy
+lxml
+python-dateutil
+pytz

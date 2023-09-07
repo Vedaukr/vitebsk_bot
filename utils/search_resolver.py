@@ -1,8 +1,15 @@
 from abc import ABC, abstractmethod
 from utils.singleton import Singleton
 from utils.escape_markdown import escape_markdown
+import requests, re
 
 class SiteSearchHandler(ABC):
+    def __init__(self) -> None:
+        self.headers = {
+            'Authorization': 'authorization',
+            'cookie': 'hl=en'
+        }
+        self.cookies = {'CONSENT': 'YES+1'}
 
     @abstractmethod
     def get_triggers(self) -> tuple[str]:
@@ -20,8 +27,21 @@ class SiteSearchHandler(ABC):
         return message
     
     def get_link_header(self, link: str) -> str:
-        return link
+        header = self.try_get_header_from_html(link)
+        return header or link.split('/')[-1]
     
+    def try_get_header_from_html(self, link: str) -> str:
+        try:
+            response = requests.get(link, timeout=5, headers=self.headers, cookies=self.cookies)
+            response.raise_for_status()
+            pattern = r"<title>(.*?)</title>"
+            match = re.search(pattern, response.text)
+            if match:
+                return match.group(1)
+        except Exception as e:
+            print(e.with_traceback(None))
+            return None
+
 class SearchResolver(metaclass=Singleton):
     def __init__(self) -> None:
         self.handlers = []
@@ -78,6 +98,13 @@ class WikiHandler(SiteSearchHandler):
     def get_site_uri(self) -> str:
         return "wikipedia.org"
     
+class YoutubeHandler(SiteSearchHandler):
+    def get_triggers(self) -> tuple[str]:
+        return ("youtube", "yt", "ютуб", "в")
+    
+    def get_site_uri(self) -> str:
+        return "youtube.com"
+    
 class DefaultHandler(SiteSearchHandler):
     def get_triggers(self) -> tuple[str]:
         return ("search", "поиск", "s", "п")
@@ -91,4 +118,5 @@ search_resolver.register_handler(StackExchangeHandler())
 search_resolver.register_handler(RedditHandler())
 search_resolver.register_handler(HabrHandler())
 search_resolver.register_handler(WikiHandler())
+search_resolver.register_handler(YoutubeHandler())
 search_resolver.register_handler(DefaultHandler())

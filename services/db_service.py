@@ -1,4 +1,5 @@
 from database.db import DbAccessor
+from database.db import DbAccessor
 from database.models import Image, Video
 from utils.dupdetector import DupDetector
 from utils.singleton import Singleton
