@@ -28,16 +28,19 @@ def msg_handler(message: telebot.types.Message):
         bot_instance.reply_to(message, f"Something fucked up: {str(e.with_traceback(None))}")
 
 @bot_instance.message_handler(regexp=r"^(\bbot\b|\bбот\b)\s.+")
-def img_handler(message: telebot.types.Message):
+def bot_cmd_handler(message: telebot.types.Message):
     try:
-        prompt = get_prompt(message.text)
-        if prompt.startswith(PICTURE_TRIGGERS):
-            picture_prompt = get_prompt(prompt)
-            if picture_prompt:
-                bot_reply = bot_instance.reply_to(message, "searching...")
-                img_link = search_service.get_image(picture_prompt)
-                bot_instance.delete_message(bot_reply.chat.id, bot_reply.message_id)
-                bot_instance.send_photo(message.chat.id, img_link, caption=picture_prompt, reply_to_message_id=message.message_id)
+        prompt = get_prompt(message.text)\
+        
+        # free subscription ended :(
+        #
+        # if prompt.startswith(PICTURE_TRIGGERS):
+        #     picture_prompt = get_prompt(prompt)
+        #     if picture_prompt:
+        #         bot_reply = bot_instance.reply_to(message, "searching...")
+        #         img_link = search_service.get_image(picture_prompt)
+        #         bot_instance.delete_message(bot_reply.chat.id, bot_reply.message_id)
+        #         bot_instance.send_photo(message.chat.id, img_link, caption=picture_prompt, reply_to_message_id=message.message_id)
 
         if prompt.startswith(CSGO_TRIGGERS):
             cs_prompt = get_prompt(prompt)
@@ -83,7 +86,7 @@ def get_ctx_handler(message: telebot.types.Message):
 @bot_instance.message_handler(commands=['get_bot_triggers'])
 def get_bot_triggers(message: telebot.types.Message):
     response = f"Usage: bot [trigger] [trigger_prompt]\n\n"
-    response += f"Picture triggers: {PICTURE_TRIGGERS}\n\n"
+    #response += f"Picture triggers: {PICTURE_TRIGGERS}\n\n"
     response += f"Csgo triggers: {CSGO_TRIGGERS}\n\n"
     response += "Search triggers:\n"
     for handler in search_resolver.handlers:
