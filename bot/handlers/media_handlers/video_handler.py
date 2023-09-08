@@ -4,15 +4,17 @@ from services.db_service import DbService
 from services.shared import MediaInfo
 from bot.bot_instance.bot import bot_instance
 from bot.handlers.shared import create_message, get_keyboard
+from bot.handlers.shared import tg_exception_handler
 
 # Singletones
 dup_service = DuplicationService()
 db_service = DbService()
 
-@bot_instance.message_handler(content_types=['photo'])
-def handle_img(message: telebot.types.Message):
+@bot_instance.message_handler(content_types=['video'])
+@tg_exception_handler
+def handle_video(message: telebot.types.Message):
 
-    fileID = message.photo[-1].file_id
+    fileID = message.video.file_id
     file_info = bot_instance.get_file(fileID)
 
     media_info = MediaInfo(
@@ -20,13 +22,13 @@ def handle_img(message: telebot.types.Message):
         author_id=str(message.from_user.id),
         chat_id=str(message.chat.id),
         media_bytes=bot_instance.download_file(file_info.file_path),
-        media_type="photo",
+        media_type="video",
     )
 
     duplicates = dup_service.detect_media_duplicates(media_info)
 
-    if (len(duplicates) > 0):
-        reply_msg = create_message(duplicates, message.chat.id)
+    if (duplicates):
+        reply_msg = create_message([duplicates], message.chat.id)
         reply_markup = get_keyboard(media_info.chat_id, message.message_id)
         bot_instance.reply_to(message, reply_msg, reply_markup=reply_markup)
     else:

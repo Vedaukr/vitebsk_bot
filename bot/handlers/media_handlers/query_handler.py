@@ -1,12 +1,14 @@
 from bot.bot_instance.bot import bot_instance
 from services.db_service import DbService
 from services.duplication_service import DuplicationService
+from bot.handlers.shared import tg_exception_handler
 
 # Singletones
 dup_service = DuplicationService()
 db_service = DbService()
 
 @bot_instance.callback_query_handler(func=lambda call: True)
+@tg_exception_handler
 def command_handler(call):
     qtype, chat_id, msg_id = call.data.split('|')
     bot_msg_id = call.message.message_id
