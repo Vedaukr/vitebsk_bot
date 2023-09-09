@@ -46,7 +46,7 @@ def normalize_audio(bytes: bytearray, extention: str) -> bytearray:
     audio.export(output, format='s16le', bitrate='16k')
     return output.getvalue()
 
-def get_response_message(info: ShazamResult):
+def get_response_message(info: ShazamResult) -> str:
     result = ""
     result += f"Found track info:\n{info.singer} - {info.title}\n"
     return result

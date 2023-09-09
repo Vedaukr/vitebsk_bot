@@ -1,7 +1,21 @@
-import requests
+from datetime import datetime
+from typing import Optional
+from dataclasses import dataclass
+from dateutil import parser
 from bs4 import BeautifulSoup
 from urllib.request import quote
 from utils.singleton import Singleton
+import requests
+
+@dataclass
+class GameInfo:
+    team1: str
+    team2: str
+    tournament: str
+    tournament_link: str
+    start_time: Optional[datetime] = None
+    twitch_channel: Optional[str] = None
+    youtube_channel: Optional[str] = None
 
 class CsService(metaclass=Singleton):
     def __init__(self, appname):
@@ -34,35 +48,42 @@ class CsService(metaclass=Singleton):
             soup,__ = self.parse(redirect_value)
             return soup,redirect_value
         
-    def get_upcoming_and_ongoing_games(self):
+    def get_upcoming_and_ongoing_games(self) -> list[GameInfo]:
         games = []
         soup,__ = self.parse('Liquipedia:Matches')
-        matches = soup.find_all('table',class_='infobox_matches_content')
+        matches = soup.find_all('table', class_='infobox_matches_content')
         for match in matches:
-            game = {}
             cells = match.find_all('td')
             try:
+                game = {}
                 game['team1'] = cells[0].find('span',class_='team-template-text').find('a').get('title')			
                 game['team2'] = cells[2].find('span',class_='team-template-text').find('a').get('title')
-                game['start_time'] = cells[3].find('span',class_="timer-object").get_text()
                 game['tournament'] = cells[3].find('div').get_text().rstrip()
                 game['tournament_link'] = f"{self.base_url}{cells[3].find('div').find('a').get('href')}"
                 
                 try:
-                    twitch_channel = cells[3].find('span',class_="timer-object").get('data-stream-twitch')
+                    start_time = cells[3].find('span',class_="timer-object").get_text()
+                    if start_time:
+                        game['start_time'] = parser.parse(start_time)
+                except Exception:
+                    pass
+
+                try:
+                    twitch_channel = cells[3].find('span', class_="timer-object").get('data-stream-twitch')
                     if twitch_channel:
                         game['twitch_channel'] = self.get_stream(twitch_channel, "twitch")
                 except AttributeError:
                     pass
 
                 try:
-                    yt_channel = cells[3].find('span',class_="timer-object").get('data-stream-youtube')
+                    yt_channel = cells[3].find('span', class_="timer-object").get('data-stream-youtube')
                     if yt_channel:
                         game['youtube_channel'] = self.get_stream(yt_channel, "youtube")
                 except AttributeError:
                     pass
-
-                games.append(game)	
+                
+                game_info = GameInfo(**game)
+                games.append(game_info)	
             
             except AttributeError:
                 continue		
