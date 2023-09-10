@@ -32,8 +32,11 @@ def bot_cmd_handler(message: telebot.types.Message):
         cs_games = list(filter(lambda game: game.start_time.replace(tzinfo=None) >= today_time, cs_games))
         
         if cs_prompt:
-            team = cs_prompt.lower()
-            cs_games = list(filter(lambda game: team in game.team1.lower() or team in game.team2.lower(), cs_games))
+            cs_prompt = cs_prompt.lower()
+            try_filter = list(filter(lambda game: cs_prompt in game.team1.lower() or cs_prompt in game.team2.lower(), cs_games))
+            if not try_filter:
+                try_filter = list(filter(lambda game: cs_prompt in game.tournament.lower(), cs_games))
+            cs_games = try_filter
 
         if not cs_games:
             bot_instance.reply_to(message, "Nothing found")
