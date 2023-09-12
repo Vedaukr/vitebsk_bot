@@ -9,3 +9,6 @@ OPENAI_TOKEN = ""
 
 #bing
 BING_SUBSCRIPTION_KEY = ""
+
+#rapid_api
+RAPID_API_SUBSCRIPTION_KEY = ""
