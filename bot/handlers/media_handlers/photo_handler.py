@@ -5,6 +5,7 @@ from services.shared import MediaInfo
 from bot.bot_instance.bot import bot_instance
 from bot.handlers.shared import create_message, get_keyboard
 from bot.handlers.shared import tg_exception_handler
+from .shared import update_drating
 
 # Singletones
 dup_service = DuplicationService()
@@ -28,9 +29,11 @@ def handle_img(message: telebot.types.Message):
     duplicates = dup_service.detect_media_duplicates(media_info)
 
     if (len(duplicates) > 0):
+        update_drating(duplicates, chatId=message.chat.id, userId=str(message.from_user.id))
         reply_msg = create_message(duplicates, message.chat.id)
         reply_markup = get_keyboard(media_info.chat_id, message.message_id)
         bot_instance.reply_to(message, reply_msg, reply_markup=reply_markup)
     else:
         db_service.save_media_to_db(media_info)
         dup_service.delete_media(media_info)
+

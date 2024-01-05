@@ -19,4 +19,3 @@ def handle_image_count(message: telebot.types.Message):
 @tg_exception_handler
 def handle_image_count(message: telebot.types.Message):
     raise Exception("Exception")
-

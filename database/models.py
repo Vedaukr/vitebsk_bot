@@ -1,4 +1,5 @@
 from sqlalchemy import String
+from sqlalchemy import Double
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -31,3 +32,15 @@ class Video(Base):
 
     def __repr__(self) -> str:
         return f"Video(hash={self.phash!r}, msgId={self.msgId!r}, authorId={self.authorId!r}, chatId={self.chatId!r})"
+    
+
+class DementiaRating(Base):
+    __tablename__ = "dementiaRating"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    chatId: Mapped[str] = mapped_column(String(64))
+    userId: Mapped[str] = mapped_column(String(64))
+    rating: Mapped[str] = mapped_column(Double())
+
+    def __repr__(self) -> str:
+        return f"DRating(chatId={self.chatId!r}, userId={self.userId!r}, rating={self.rating!r})"

@@ -30,6 +30,13 @@ class DbService(metaclass=Singleton):
                 authorId=media_info.author_id,
             )
             self.db_accessor.add_video(video)
+
+    def update_drating(self, chatId, userId, rating):
+        self.db_accessor.update_drating(chatId, userId, rating)
+        
+    def get_sorted_drating(self, chatId):
+        return list(sorted(self.db_accessor.get_drating_by_chat_id(chatId), key=lambda dr: dr.rating, reverse=True))
     
-    def get_images_count(self, chat_id):
-        return len(list(self.db_accessor.get_images_by_chat_id(chat_id)))
+    def get_images_count(self, chatId):
+        return len(list(self.db_accessor.get_images_by_chat_id(chatId)))
+    

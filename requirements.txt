@@ -6,7 +6,8 @@ Pillow==9.5.0
 protobuf==4.22.3
 pyTelegramBotAPI==4.11.0
 SQLAlchemy==2.0.9
-openai
+Werkzeug==2.2.2
+openai==0.28
 google-cloud
 google-cloud-vision
 google-cloud-language

@@ -1,4 +1,4 @@
-from database.models import Image, Video
+from database.models import Image, Video, DementiaRating
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from utils.singleton import Singleton
@@ -20,14 +20,30 @@ class DbAccessor(metaclass=Singleton):
             session.add(video)
             session.commit()
 
+    def update_drating(self, chatId, userId, rating):
+        with Session(self.engine) as session:
+            stmt = select(DementiaRating).where(DementiaRating.chatId.in_([chatId])).where(DementiaRating.userId.in_([userId]))
+            res = list(session.scalars(stmt))
+            if not res:
+                drating = DementiaRating(chatId=chatId, userId=userId, rating=rating)
+                session.add(drating)
+            else:
+                res[0].rating += rating
+            stmt = select(DementiaRating)
+            res = list(session.scalars(stmt))
+            session.commit()
+            
     def get_images_by_chat_id(self, chatId):
         session = Session(self.engine)
         stmt = select(Image).where(Image.chatId.in_([chatId]))
         return session.scalars(stmt)
-    
 
     def get_videos_by_chat_id(self, chatId):
         session = Session(self.engine)
         stmt = select(Video).where(Video.chatId.in_([chatId]))
         return session.scalars(stmt)
     
+    def get_drating_by_chat_id(self, chatId):
+        session = Session(self.engine)
+        stmt = select(DementiaRating).where(DementiaRating.chatId.in_([chatId]))
+        return session.scalars(stmt)
