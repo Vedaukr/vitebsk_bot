@@ -23,7 +23,7 @@ class SiteSearchHandler(ABC):
         message = "Results:\n"
         for count,link in enumerate(links):
             header = self.get_link_header(link)
-            message += f"{count + 1}\. [{escape_markdown(header)}]({link})\n"
+            message += f"{count + 1}\. [{escape_markdown(header)}]({escape_markdown(link)})\n"
         return message
     
     def get_link_header(self, link: str) -> str:
