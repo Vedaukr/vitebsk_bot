@@ -30,7 +30,7 @@ csgo_subparser.add_argument('-tournament', help='Search by tournament', default=
 csgo_subparser.add_argument('-today', help='Only matches that occur today', default=False, action=argparse.BooleanOptionalAction)
 
 
-# csgo
+# dota
 dota_subparser = subparsers.add_parser(DOTA_TRIGGERS[0], aliases=DOTA_TRIGGERS[1:])
 dota_subparser.add_argument('-team', help='Search by team', default=False, action=argparse.BooleanOptionalAction)
 dota_subparser.add_argument('-tournament', help='Search by tournament', default=False, action=argparse.BooleanOptionalAction)

@@ -15,5 +15,7 @@ bot_instance.set_my_commands([
     telebot.types.BotCommand("/get_img_labels", "Описание картинки (реплай на картинку)"),
     telebot.types.BotCommand("/get_img_text", "Распознать текст на картинке (реплай на картинку)"),
     telebot.types.BotCommand("/get_bot_triggers", "Че ботяра умеет"),
+    telebot.types.BotCommand("/get_gpt_params", "GPT parameters (list, comment, range)"),
+    telebot.types.BotCommand("/reset_gpt_params", "Reset GPT parameters to default (retards from chat have set some shit values)"),
     telebot.types.BotCommand("/get_random_chat_msg", "Рандомное сообщение из чата"),
 ])
