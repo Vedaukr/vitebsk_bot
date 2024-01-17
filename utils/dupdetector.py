@@ -30,10 +30,10 @@ class DupDetector:
         hash = self.get_hash(video)
         for vid in videos:
             if vid.hash == hash:
-                return {
+                return [{
                     "dist": 0,
                     "msgId": vid.msgId
-                }
+                }]
         return None
     
     def get_phash(self, image):
