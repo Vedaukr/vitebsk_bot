@@ -5,7 +5,7 @@ from services.shared import MediaInfo
 from bot.bot_instance.bot import bot_instance
 from bot.handlers.shared import create_message, get_keyboard, normalize_tg_chat_id
 from bot.handlers.shared import tg_exception_handler
-from .shared import update_drating
+from .shared import update_drating, get_chat_member_safe
 
 # Singletones
 dup_service = DuplicationService()
@@ -33,7 +33,7 @@ def handle_video(message: telebot.types.Message):
     
         if message.forward_signature:
             ratings = db_service.get_sorted_drating(normalize_tg_chat_id(message.chat.id))
-            usernames = list(map(lambda r: (r.userId, bot_instance.get_chat_member(message.chat.id, r.userId).user.full_name), ratings))
+            usernames = list(map(lambda r: (r.userId, get_chat_member_safe(bot_instance, message, r)), ratings))
             for uname in usernames:
                 if message.forward_signature == uname[1]:
                     user_id = uname[0]

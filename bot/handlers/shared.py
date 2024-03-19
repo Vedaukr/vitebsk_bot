@@ -50,6 +50,6 @@ def tg_exception_handler(func):
 
             message = args[0]
             print('exception_report ', exception_report)
-            bot_instance.reply_to(message, f"Something fucked up: {str(ex.with_traceback(None))}")
+            bot_instance.reply_to(message, f"Something fucked up: {str(ex.with_traceback(None))}\nException report:\n {exception_report}")
 
     return wrapper
