@@ -50,8 +50,9 @@ class SearchResolver(metaclass=Singleton):
         self.handlers.append(handler)
 
     def get_site_search_handler(self, prompt: str) -> SiteSearchHandler:
+        prompt = prompt.split(" ")[0]
         for handler in self.handlers:
-            if prompt.startswith(handler.get_triggers()):
+            if prompt.lower() in handler.get_triggers():
                 return handler
 
     
