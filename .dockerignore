@@ -1,0 +1,9 @@
+/**
+!/bot
+!/database/db.py
+!/database/models.py
+!/services
+!/settings
+!/utils
+!*.py
+!requirements.txt

@@ -8,9 +8,6 @@ pyTelegramBotAPI==4.11.0
 SQLAlchemy==2.0.9
 Werkzeug==2.2.2
 openai==0.28
-google-cloud
-google-cloud-vision
-google-cloud-language
 google==3.0.0
 numpy
 lxml

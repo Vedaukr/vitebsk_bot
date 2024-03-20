@@ -9,7 +9,6 @@ bot_instance.set_my_commands([
     telebot.types.BotCommand("/test_exception_handling", "Test exception handling (debug)"),
     telebot.types.BotCommand("/clear_gpt_context", "Clear gpt context"),
     telebot.types.BotCommand("/get_gpt_context", "View my gpt context"),
-    telebot.types.BotCommand("/shazam_song", "Shazam song"),
     telebot.types.BotCommand("/get_dementia_rating", "Dementia rating"),
     telebot.types.BotCommand("/get_rtf", "Получить пожилого ртфченка"),
     telebot.types.BotCommand("/get_bot_triggers", "Че ботяра умеет"),
