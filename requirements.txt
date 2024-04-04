@@ -13,4 +13,4 @@ numpy
 lxml
 python-dateutil
 pytz
-pydub
+cachetools

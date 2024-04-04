@@ -9,4 +9,5 @@ openai_service = OpenAiService()
 @tg_exception_handler
 def get_ctx_handler(message: telebot.types.Message):
     ctx = openai_service.get_or_create_context(str(message.from_user.id))
-    bot_instance.reply_to(message, f"Your context:\n{ctx if ctx else 'empty ctx'}")
+    ctx_str = openai_service.convert_context_to_str(ctx)
+    bot_instance.reply_to(message, f"Your context:\n{ctx_str if ctx else 'empty context'}")
