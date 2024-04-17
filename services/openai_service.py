@@ -36,7 +36,7 @@ class OpenAiService(metaclass=Singleton):
                 {"role": "user", "content": prompt},
             ],
             temperature=self.params["temperature"],
-            max_tokens=self.params["max_tokens"],
+            max_tokens=int(self.params["max_tokens"]),
             frequency_penalty=self.params["frequency_penalty"],
             presence_penalty=self.params["presence_penalty"]
         )
