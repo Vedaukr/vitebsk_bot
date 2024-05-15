@@ -3,7 +3,9 @@ from bot.handlers.msg_handlers.shared import get_prompt
 from bot.handlers.shared import tg_exception_handler, continue_handling, msg_starts_with_filter, get_msg_text
 from services.openai_service import OpenAiService
 import telebot
-import base64   
+import base64
+
+from utils.escape_markdown import escape_markdown   
 
 param_info = {
     "max_tokens": """The maximum number of tokens that can be generated in the chat completion.
@@ -24,7 +26,11 @@ def gpt_handler(message: telebot.types.Message):
     msg_text = get_msg_text(message)
     prompt = get_prompt(msg_text)
     openai_response = openai_service.generate_text(prompt, model_name="gpt-3.5-turbo", user_id=str(message.from_user.id))
-    bot_instance.edit_message_text(openai_response, message.chat.id, bot_reply.message_id)
+    try:
+        bot_instance.edit_message_text(escape_markdown(openai_response, entity_type='code'), message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
+    except Exception:
+        bot_instance.edit_message_text(escape_markdown(openai_response), message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
+
 
 @bot_instance.message_handler(func=msg_starts_with_filter(("gpt4 ", "гпт4 ")), content_types=['text', 'photo'])
 @tg_exception_handler
@@ -35,7 +41,10 @@ def gpt4_handler(message: telebot.types.Message):
     msg_text = get_msg_text(message)
     prompt = get_prompt(msg_text)
     openai_response = openai_service.generate_text(prompt, model_name="gpt-4o", user_id=str(message.from_user.id), base64_image=base64_image, img_ext=img_ext)
-    bot_instance.edit_message_text(openai_response, message.chat.id, bot_reply.message_id)
+    try:
+        bot_instance.edit_message_text(escape_markdown(openai_response, entity_type='code'), message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
+    except Exception:
+        bot_instance.edit_message_text(escape_markdown(openai_response), message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
 
 @bot_instance.message_handler(commands=["get_gpt_params"])
 @tg_exception_handler
