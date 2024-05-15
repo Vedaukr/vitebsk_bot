@@ -10,7 +10,7 @@ import argparse
 
 CSGO_TRIGGERS = ("кс", "csgo", "cs")
 DOTA_TRIGGERS = ("dota", "дота")
-MAX_GAMES = 10
+MAX_GAMES = 8
 
 PRAGUE_TZ = pytz.timezone("Europe/Prague")
 KYIV_TZ = pytz.timezone("Europe/Kiev")
@@ -101,7 +101,9 @@ def handle_cs_prompt(message: telebot.types.Message, args: argparse.Namespace, c
         bot_instance.reply_to(message, "Nothing found")
         return None
     
-    bot_instance.reply_to(message, get_games_response(cs_games[:MAX_GAMES]), parse_mode="MarkdownV2")
+    cs_games = cs_games[:MAX_GAMES]
+    csgo_service.update_stream_links(cs_games)
+    bot_instance.reply_to(message, get_games_response(cs_games), parse_mode="MarkdownV2")
 
 def handle_dota_prompt(message: telebot.types.Message, args: argparse.Namespace, dota_prompt: str):
     dota_games = dota_service.get_upcoming_and_ongoing_games()
@@ -132,7 +134,9 @@ def handle_dota_prompt(message: telebot.types.Message, args: argparse.Namespace,
         bot_instance.reply_to(message, "Nothing found")
         return None
     
-    bot_instance.reply_to(message, get_games_response(dota_games[:MAX_GAMES]), parse_mode="MarkdownV2")
+    dota_games = dota_games[:MAX_GAMES]
+    dota_service.update_stream_links(dota_games)
+    bot_instance.reply_to(message, get_games_response(dota_games), parse_mode="MarkdownV2")
 
 def get_games_response(games: list[GameInfo]):
     result = ""

@@ -1,10 +1,11 @@
 from datetime import datetime
-from typing import Optional
+from typing import Iterable, Optional
 from dataclasses import dataclass
 from dateutil import parser
 from bs4 import BeautifulSoup
 from urllib.request import quote
 from utils.singleton import Singleton
+from urllib.parse import urlparse, parse_qs
 import requests
 
 @dataclass
@@ -48,6 +49,32 @@ class LiquepidiaService:
             soup,__ = self.parse(redirect_value)
             return soup,redirect_value
 
+    def update_stream_links(self, games: Iterable[GameInfo]):
+        for game in games:
+            if game.twitch_channel:
+                try:
+                    liq_page = self.try_get_soup(game.twitch_channel)
+                    if liq_page:
+                        channel_url = urlparse(liq_page.find('iframe').get('src'))
+                        game.twitch_channel = f"https://www.twitch.tv/{parse_qs(channel_url.query)['channel'][0]}"
+                except Exception:
+                    pass
+
+            if game.youtube_channel:
+                try:
+                    liq_page = self.try_get_soup(game.youtube_channel)
+                    if liq_page:
+                        channel_url = urlparse(liq_page.find('iframe').get('src'))
+                        game.youtube_channel = f"https://www.youtube.com/watch?v={channel_url.path.split('/')[-1]}"
+                except Exception:
+                    pass
+        
+    def try_get_soup(self, url):
+        response = requests.get(url, headers=self.__headers)
+        if response.status_code == 200:
+            page_html = response.content
+            return BeautifulSoup(page_html, features="lxml")
+
 class CsService(LiquepidiaService):
     def __init__(self, appname):
         super().__init__(appname, "/counterstrike/api.php?")
@@ -76,6 +103,7 @@ class CsService(LiquepidiaService):
                     twitch_channel = cells[3].find('span', class_="timer-object").get('data-stream-twitch')
                     if twitch_channel:
                         game['twitch_channel'] = self.get_stream(twitch_channel, "twitch")
+                
                 except AttributeError:
                     pass
 
