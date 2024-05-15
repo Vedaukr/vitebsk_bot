@@ -25,7 +25,7 @@ class OpenAiService(metaclass=Singleton):
         self.context = cachetools.TTLCache(maxsize=MAX_CACHE_SIZE, ttl=CACHE_TTL)
         self.params = copy.deepcopy(default_settings)
 
-    def get_response(self, prompt, model_name="gpt-3.5-turbo", user_id="common", base64_image=None, img_ext="jpeg"):
+    def generate_text(self, prompt, model_name="gpt-3.5-turbo", user_id="common", base64_image=None, img_ext="jpeg"):
         context = self.get_or_create_context(user_id)
         context_str = self.convert_context_to_str(context)
         messages = [

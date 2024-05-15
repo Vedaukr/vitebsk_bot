@@ -19,27 +19,27 @@ openai_service = OpenAiService()
 @bot_instance.message_handler(func=msg_starts_with_filter(("gpt ", "гпт ")))
 @tg_exception_handler
 @continue_handling
-def msg_handler(message: telebot.types.Message):
+def gpt_handler(message: telebot.types.Message):
     bot_reply = bot_instance.reply_to(message, "generating...")    
     msg_text = get_msg_text(message)
     prompt = get_prompt(msg_text)
-    openai_response = openai_service.get_response(prompt, model_name="gpt-3.5-turbo", user_id=str(message.from_user.id))
+    openai_response = openai_service.generate_text(prompt, model_name="gpt-3.5-turbo", user_id=str(message.from_user.id))
     bot_instance.edit_message_text(openai_response, message.chat.id, bot_reply.message_id)
 
 @bot_instance.message_handler(func=msg_starts_with_filter(("gpt4 ", "гпт4 ")), content_types=['text', 'photo'])
 @tg_exception_handler
 @continue_handling
-def msg_handler(message: telebot.types.Message):
+def gpt4_handler(message: telebot.types.Message):
     bot_reply = bot_instance.reply_to(message, "generating...")  
     base64_image, img_ext = try_get_image(message)  
     msg_text = get_msg_text(message)
     prompt = get_prompt(msg_text)
-    openai_response = openai_service.get_response(prompt, model_name="gpt-4o", user_id=str(message.from_user.id), base64_image=base64_image, img_ext=img_ext)
+    openai_response = openai_service.generate_text(prompt, model_name="gpt-4o", user_id=str(message.from_user.id), base64_image=base64_image, img_ext=img_ext)
     bot_instance.edit_message_text(openai_response, message.chat.id, bot_reply.message_id)
 
 @bot_instance.message_handler(commands=["get_gpt_params"])
 @tg_exception_handler
-def msg_handler(message: telebot.types.Message):
+def get_params_handler(message: telebot.types.Message):
     response = "GPT params:\n\n"
     for k, v in openai_service.params.items():
         response += f"{k} = {v}\n{param_info[k]}\n\n"
@@ -48,13 +48,13 @@ def msg_handler(message: telebot.types.Message):
 
 @bot_instance.message_handler(commands=["reset_gpt_params"])
 @tg_exception_handler
-def msg_handler(message: telebot.types.Message):
+def reset_params_handler(message: telebot.types.Message):
     openai_service.reset_defaults()
     bot_instance.reply_to(message, "Reset suckassfull.")    
 
 @bot_instance.message_handler(regexp=r"^(\bset_gpt_param\b)\s.+")
 @tg_exception_handler
-def msg_handler(message: telebot.types.Message):
+def set_params_handler(message: telebot.types.Message):
     prompt = get_prompt(message.text)
     param, value = prompt.split(" ")[0], prompt.split(" ")[1]
     if not param in openai_service.params:
