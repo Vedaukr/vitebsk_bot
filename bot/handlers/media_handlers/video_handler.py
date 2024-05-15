@@ -11,38 +11,38 @@ from .shared import update_drating, get_chat_member_safe
 dup_service = DuplicationService()
 db_service = DbService()
 
-@bot_instance.message_handler(content_types=['video'])
-@tg_exception_handler
-def handle_video(message: telebot.types.Message):
+# @bot_instance.message_handler(content_types=['video'])
+# @tg_exception_handler
+# def handle_video(message: telebot.types.Message):
 
-    fileID = message.video.file_id
-    file_info = bot_instance.get_file(fileID)
+#     fileID = message.video.file_id
+#     file_info = bot_instance.get_file(fileID)
 
-    media_info = MediaInfo(
-        msg_id=str(message.message_id),
-        author_id=str(message.from_user.id),
-        chat_id=str(message.chat.id),
-        media_bytes=bot_instance.download_file(file_info.file_path),
-        media_type="video",
-    )
+#     media_info = MediaInfo(
+#         msg_id=str(message.message_id),
+#         author_id=str(message.from_user.id),
+#         chat_id=str(message.chat.id),
+#         media_bytes=bot_instance.download_file(file_info.file_path),
+#         media_type="video",
+#     )
 
-    duplicates = dup_service.detect_media_duplicates(media_info)
+#     duplicates = dup_service.detect_media_duplicates(media_info)
 
-    if (duplicates):
-        user_id = message.from_user.id
+#     if (duplicates):
+#         user_id = message.from_user.id
     
-        if message.forward_signature:
-            ratings = db_service.get_sorted_drating(normalize_tg_chat_id(message.chat.id))
-            usernames = list(map(lambda r: (r.userId, get_chat_member_safe(bot_instance, message, r)), ratings))
-            for uname in usernames:
-                if message.forward_signature == uname[1]:
-                    user_id = uname[0]
-                    break
+#         if message.forward_signature:
+#             ratings = db_service.get_sorted_drating(normalize_tg_chat_id(message.chat.id))
+#             usernames = list(map(lambda r: (r.userId, get_chat_member_safe(bot_instance, message, r)), ratings))
+#             for uname in usernames:
+#                 if message.forward_signature == uname[1]:
+#                     user_id = uname[0]
+#                     break
 
-        update_drating(duplicates, chatId=message.chat.id, userId=str(user_id))
-        reply_msg = create_message(duplicates, message.chat.id)
-        reply_markup = get_keyboard(media_info.chat_id, message.message_id)
-        bot_instance.reply_to(message, reply_msg, reply_markup=reply_markup)
-    else:
-        db_service.save_media_to_db(media_info)
-        dup_service.delete_media(media_info)
+#         update_drating(duplicates, chatId=message.chat.id, userId=str(user_id))
+#         reply_msg = create_message(duplicates, message.chat.id)
+#         reply_markup = get_keyboard(media_info.chat_id, message.message_id)
+#         bot_instance.reply_to(message, reply_msg, reply_markup=reply_markup)
+#     else:
+#         db_service.save_media_to_db(media_info)
+#         dup_service.delete_media(media_info)

@@ -25,16 +25,42 @@ class OpenAiService(metaclass=Singleton):
         self.context = cachetools.TTLCache(maxsize=MAX_CACHE_SIZE, ttl=CACHE_TTL)
         self.params = copy.deepcopy(default_settings)
 
-    def get_response(self, prompt, model_name="gpt-3.5-turbo", user_id="common"):
+    def get_response(self, prompt, model_name="gpt-3.5-turbo", user_id="common", base64_image=None, img_ext="jpeg"):
         context = self.get_or_create_context(user_id)
         context_str = self.convert_context_to_str(context)
+        messages = [
+            {
+                "role": "system", 
+                "content": [
+                    {
+                        "type": "text",
+                        "text": context_str
+                    }
+                ]
+            },
+            {
+                "role": "user", 
+                "content": [
+                    {
+                        "type": "text",
+                        "text": prompt
+                    }
+                ]
+            },
+        ]
+        
+        if base64_image:
+            messages[1]["content"].append({
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/{img_ext};base64,{base64_image}",
+                    "detail": "low"
+                }
+            })
 
         response = openai.ChatCompletion.create(
             model=model_name,
-            messages=[
-                {"role": "system", "content": context_str},
-                {"role": "user", "content": prompt},
-            ],
+            messages=messages,
             temperature=self.params["temperature"],
             max_tokens=int(self.params["max_tokens"]),
             frequency_penalty=self.params["frequency_penalty"],

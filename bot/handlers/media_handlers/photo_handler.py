@@ -4,7 +4,7 @@ from services.db_service import DbService
 from services.shared import MediaInfo
 from bot.bot_instance.bot import bot_instance
 from bot.handlers.shared import create_message, get_keyboard, normalize_tg_chat_id
-from bot.handlers.shared import tg_exception_handler
+from bot.handlers.shared import tg_exception_handler, continue_handling
 from .shared import update_drating, get_chat_member_safe
 
 # Singletones
@@ -13,6 +13,7 @@ db_service = DbService()
 
 @bot_instance.message_handler(content_types=['photo'])
 @tg_exception_handler
+@continue_handling
 def handle_img(message: telebot.types.Message):
 
     fileID = message.photo[-1].file_id
