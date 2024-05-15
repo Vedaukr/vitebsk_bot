@@ -62,7 +62,7 @@ class CsService(LiquepidiaService):
                 game = {}
                 game['team1'] = cells[0].find('span',class_='team-template-text').find('a').get('title')			
                 game['team2'] = cells[2].find('span',class_='team-template-text').find('a').get('title')
-                game['tournament'] = cells[3].find('div').get_text().rstrip()
+                game['tournament'] = cells[3].find('div').find_all('div')[1].get_text().rstrip()
                 game['tournament_link'] = f"{self.base_url}{cells[3].find('div').find('a').get('href')}"
                 
                 try:
