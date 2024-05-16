@@ -29,7 +29,7 @@ def gpt_handler(message: telebot.types.Message):
     try:
         bot_instance.edit_message_text(escape_markdown(openai_response, entity_type='code'), message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
     except Exception:
-        bot_instance.edit_message_text(escape_markdown(openai_response), message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
+        bot_instance.edit_message_text(openai_response, message.chat.id, bot_reply.message_id)
 
 
 @bot_instance.message_handler(func=msg_starts_with_filter(("gpt4 ", "гпт4 ")), content_types=['text', 'photo'])
@@ -44,7 +44,7 @@ def gpt4_handler(message: telebot.types.Message):
     try:
         bot_instance.edit_message_text(escape_markdown(openai_response, entity_type='code'), message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
     except Exception:
-        bot_instance.edit_message_text(escape_markdown(openai_response), message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
+        bot_instance.edit_message_text(openai_response, message.chat.id, bot_reply.message_id)
 
 @bot_instance.message_handler(commands=["get_gpt_params"])
 @tg_exception_handler
