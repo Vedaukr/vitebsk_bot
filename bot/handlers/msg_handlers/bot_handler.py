@@ -103,7 +103,7 @@ def handle_cs_prompt(message: telebot.types.Message, args: argparse.Namespace, c
     
     cs_games = cs_games[:MAX_GAMES]
     csgo_service.update_stream_links(cs_games)
-    bot_instance.reply_to(message, get_games_response(cs_games), parse_mode="MarkdownV2")
+    bot_instance.reply_to(message, get_games_response(cs_games), parse_mode="MarkdownV2", disable_web_page_preview=True)
 
 def handle_dota_prompt(message: telebot.types.Message, args: argparse.Namespace, dota_prompt: str):
     dota_games = dota_service.get_upcoming_and_ongoing_games()
@@ -136,7 +136,7 @@ def handle_dota_prompt(message: telebot.types.Message, args: argparse.Namespace,
     
     dota_games = dota_games[:MAX_GAMES]
     dota_service.update_stream_links(dota_games)
-    bot_instance.reply_to(message, get_games_response(dota_games), parse_mode="MarkdownV2")
+    bot_instance.reply_to(message, get_games_response(dota_games), parse_mode="MarkdownV2", disable_web_page_preview=True)
 
 def get_games_response(games: list[GameInfo]):
     result = ""
