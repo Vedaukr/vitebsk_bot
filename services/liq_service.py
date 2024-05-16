@@ -1,4 +1,5 @@
 from datetime import datetime
+import functools
 from typing import Iterable, Optional
 from dataclasses import dataclass
 from dateutil import parser
@@ -53,27 +54,27 @@ class LiquepidiaService:
         for game in games:
             if game.twitch_channel:
                 try:
-                    liq_page = self.try_get_soup(game.twitch_channel)
-                    if liq_page:
-                        channel_url = urlparse(liq_page.find('iframe').get('src'))
-                        game.twitch_channel = f"https://www.twitch.tv/{parse_qs(channel_url.query)['channel'][0]}"
+                    ssurl = self.try_get_stream_service_url(game.twitch_channel)
+                    if ssurl:
+                        game.twitch_channel = f"https://www.twitch.tv/{parse_qs(ssurl.query)['channel'][0]}"
                 except Exception:
                     pass
 
             if game.youtube_channel:
                 try:
-                    liq_page = self.try_get_soup(game.youtube_channel)
-                    if liq_page:
-                        channel_url = urlparse(liq_page.find('iframe').get('src'))
-                        game.youtube_channel = f"https://www.youtube.com/watch?v={channel_url.path.split('/')[-1]}"
+                    ssurl = self.try_get_stream_service_url(game.youtube_channel)
+                    if ssurl:
+                        game.youtube_channel = f"https://www.youtube.com/watch?v={ssurl.path.split('/')[-1]}"
                 except Exception:
                     pass
-        
-    def try_get_soup(self, url):
+    
+    @functools.lru_cache(maxsize=100, typed=False)
+    def try_get_stream_service_url(self, url):
         response = requests.get(url, headers=self.__headers)
         if response.status_code == 200:
-            page_html = response.content
-            return BeautifulSoup(page_html, features="lxml")
+            liq_page = BeautifulSoup(response.content, features="lxml")
+            return urlparse(liq_page.find('iframe').get('src'))
+
 
 class CsService(LiquepidiaService):
     def __init__(self, appname):

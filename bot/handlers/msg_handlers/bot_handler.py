@@ -10,7 +10,7 @@ import argparse
 
 CSGO_TRIGGERS = ("кс", "csgo", "cs")
 DOTA_TRIGGERS = ("dota", "дота")
-MAX_GAMES = 8
+MAX_GAMES = 10
 
 PRAGUE_TZ = pytz.timezone("Europe/Prague")
 KYIV_TZ = pytz.timezone("Europe/Kiev")
