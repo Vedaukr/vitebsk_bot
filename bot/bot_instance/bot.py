@@ -1,7 +1,8 @@
-import telebot
+from .telebot_extention import TelebotExt
 from settings import BOT_TOKEN
+import telebot
 
-bot_instance = telebot.TeleBot(token=BOT_TOKEN, parse_mode=None)
+bot_instance = TelebotExt(token=BOT_TOKEN, parse_mode=None)
 
 bot_instance.set_my_commands([
     telebot.types.BotCommand("/clear_gpt_context", "Clear gpt context"),
