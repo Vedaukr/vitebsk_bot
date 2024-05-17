@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from datetime import datetime
 import functools
 from typing import Iterable, Optional
@@ -5,6 +6,7 @@ from dataclasses import dataclass
 from dateutil import parser
 from bs4 import BeautifulSoup
 from urllib.request import quote
+from utils.filter_utils import filter_unique
 from utils.singleton import Singleton
 from urllib.parse import urlparse, parse_qs
 import requests
@@ -19,12 +21,16 @@ class GameInfo:
     twitch_channel: Optional[str] = None
     youtube_channel: Optional[str] = None
 
-class LiquepidiaService:
+class LiquipediaService:
     def __init__(self, appname, api_route):
         self.appname = appname
         self.__headers = {'User-Agent': appname, 'Accept-Encoding': 'gzip'}
         self.base_url = 'https://liquipedia.net'
         self.base_api_url = f'{self.base_url}{api_route}'
+
+    @abstractmethod
+    def get_upcoming_and_ongoing_games(self) -> list[GameInfo]:
+        pass
 
     def parse(self,page):
         success, soup = False, None
@@ -76,7 +82,7 @@ class LiquepidiaService:
             return urlparse(liq_page.find('iframe').get('src'))
 
 
-class CsService(LiquepidiaService):
+class CsService(LiquipediaService):
     def __init__(self, appname):
         super().__init__(appname, "/counterstrike/api.php?")
         
@@ -121,12 +127,12 @@ class CsService(LiquepidiaService):
             except AttributeError:
                 continue		
                     
-        return games
+        return filter_unique(games, lambda game: (game.team1, game.team2))
     
     def get_stream(self, stream_id: str, stream_type: str) -> str:
         return f"{self.base_url}/counterstrike/Special:Stream/{stream_type}/{stream_id}"
     
-class DotaService(LiquepidiaService):
+class DotaService(LiquipediaService):
     def __init__(self, appname):
         super().__init__(appname, "/dota2/api.php?")
         
@@ -170,7 +176,7 @@ class DotaService(LiquepidiaService):
             except AttributeError:
                 continue		
                     
-        return games
+        return filter_unique(games, lambda game: (game.team1, game.team2))
     
     def get_stream(self, stream_id: str, stream_type: str) -> str:
         return f"{self.base_url}/dota2/Special:Stream/{stream_type}/{stream_id}"

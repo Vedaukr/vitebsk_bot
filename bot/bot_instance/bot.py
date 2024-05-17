@@ -9,8 +9,8 @@ bot_instance.set_my_commands([
     telebot.types.BotCommand("/get_gpt_context", "View my gpt context"),
     telebot.types.BotCommand("/get_dementia_rating", "Dementia rating"),
     telebot.types.BotCommand("/get_rtf", "Получить пожилого ртфченка"),
-    telebot.types.BotCommand("/get_bot_triggers", "Че ботяра умеет"),
     telebot.types.BotCommand("/get_gpt_params", "GPT parameters (list, comment, range)"),
     telebot.types.BotCommand("/reset_gpt_params", "Reset GPT parameters to default (retards from chat have set some shit values)"),
     telebot.types.BotCommand("/get_random_chat_msg", "Рандомное сообщение из чата"),
+    telebot.types.BotCommand("/help", "Че ботяра умеет"),
 ])

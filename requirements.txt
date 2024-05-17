@@ -14,3 +14,4 @@ lxml
 python-dateutil
 pytz
 cachetools
+funcy
