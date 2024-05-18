@@ -24,8 +24,13 @@ gpt4 [prompt]
 
 CS/Dota matches:
 
-bot cs [-today|-tournament|-team] [prompt]
-bot dota [-today|-tournament|-team] [prompt]
+bot cs [-today|-tournament|-team|-yt|-twitch] [prompt]
+bot dota [-today|-tournament|-team|-yt|-twitch] [prompt]
+    -today: games that occur today
+    -tournament: filter only by tournament 
+    -team: filter only by team 
+    -yt: only games that have youtube stream
+    -twitch: only games that have twitch stream
 
 Search:
 bot [trigger] [trigger_prompt]
