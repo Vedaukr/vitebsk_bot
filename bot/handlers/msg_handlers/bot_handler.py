@@ -4,7 +4,7 @@ from bot.handlers.shared import tg_exception_handler
 from bot.handlers.msg_handlers.shared import get_prompt
 from services.search_service import SearchService
 from services.liq_service import CsService, DotaService, GameInfo, LiquipediaService
-from utils.escape_markdown import escape_markdown
+from utils.md_utils import escape_markdown
 from utils.search_resolver import search_resolver
 import telebot, datetime, pytz
 import argparse
@@ -54,7 +54,7 @@ def bot_cmd_handler(message: telebot.types.Message):
         if search_prompt:
             links = search_service.get_search_results(search_prompt, search_handler.get_site_uri())
             response = search_handler.get_response(links)
-            bot_instance.edit_message_text(response, message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
+            bot_instance.edit_message_text(response, message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2", disable_web_page_preview=True)
             return None
 
     try:
@@ -82,7 +82,7 @@ def handle_liq_prompt(game_service: LiquipediaService, args: argparse.Namespace,
     if not games:
         return "Nothing found"
     
-    return get_games_response(games)
+    return ''.join(map(lambda g: g.to_md_string(), games))
 
 def build_filters(args: argparse.Namespace, prompt: str) -> list[Callable[[GameInfo], bool]]:
     today_time = datetime.datetime.now().replace(minute=0, hour=0, second=0, microsecond=0)
@@ -113,23 +113,3 @@ def build_filters(args: argparse.Namespace, prompt: str) -> list[Callable[[GameI
             filters.append(fy.any_fn(FILTER_TEAM, FILTER_TOURNAMENT))
 
     return filters
-
-def get_games_response(games: list[GameInfo]) -> str:
-    result = ""
-    for game in games:
-        result += f"[{escape_markdown(game.tournament)}]({escape_markdown(game.tournament_link)})\n"
-        result += f"{escape_markdown(game.team1)} \- {escape_markdown(game.team2)}\n"
-        
-        if game.start_time:
-            pg_time = game.start_time.astimezone(PRAGUE_TZ)
-            kyiv_time = game.start_time.astimezone(KYIV_TZ)
-            time_str = f"{pg_time.strftime('%d %b %Y')} | {pg_time.strftime('%H:%M')} European | {kyiv_time.strftime('%H:%M')} Kyiv"
-            result += f"{escape_markdown(time_str)}\n"
-        
-        if game.stream_links:
-            for (stream_type, stream_link) in game.stream_links.items():
-                result += f"[{stream_type.capitalize()}]({escape_markdown(stream_link)})\n"
-
-        result += "\n"
-
-    return result

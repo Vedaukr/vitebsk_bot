@@ -27,3 +27,6 @@ def escape_markdown(text: str, version: int = 2, entity_type: str = None) -> str
         raise ValueError('Markdown version must be either 1 or 2!')
 
     return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
+
+def get_md_link(link_text: str, link_url: str) -> str:
+    return f"[{escape_markdown(link_text)}]({escape_markdown(link_url)})"

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from utils.singleton import Singleton
-from utils.escape_markdown import escape_markdown
+from utils.md_utils import escape_markdown
 import requests, re
 
 class SiteSearchHandler(ABC):

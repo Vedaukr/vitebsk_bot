@@ -15,3 +15,6 @@ RAPID_API_SUBSCRIPTION_KEY = ""
 
 #stabilityai
 STABILITYAI_TOKEN = ""
+
+#temp solution for scheduler
+TARGET_CHAT_ID = ""

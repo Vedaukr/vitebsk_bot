@@ -5,8 +5,10 @@ from dataclasses import dataclass
 from dateutil import parser
 from bs4 import BeautifulSoup, ResultSet
 from urllib.request import quote
+from utils.md_utils import escape_markdown, get_md_link
 from utils.filter_utils import filter_unique
 from urllib.parse import urlparse, parse_qs
+import pytz
 import requests
 import abc
 import funcy as fy
@@ -14,14 +16,51 @@ import funcy as fy
 DATA_STREAM_ATTR = "data-stream-"
 MAX_GAMES = 10
 
+PRAGUE_TZ = pytz.timezone("Europe/Prague")
+KYIV_TZ = pytz.timezone("Europe/Kiev")
+
 @dataclass
 class GameInfo:
     team1: str
     team2: str
     tournament: str
     tournament_link: str
+    team1_liqlink: Optional[str] = None
+    team2_liqlink: Optional[str] = None
+    versus: Optional[str] = None
     start_time: Optional[datetime] = None
     stream_links: Optional[dict[str, str]] = None
+
+    def to_md_string(self) -> str:
+        result = ""
+        result += f"{get_md_link(self.tournament, self.tournament_link)}\n"
+
+        versus = self.versus if self.versus else '-'
+        team1 = get_md_link(self.team1, self.team1_liqlink) if self.team1_liqlink else self.team1
+        team2 = get_md_link(self.team2, self.team2_liqlink) if self.team2_liqlink else self.team2
+        result += f"{team1} {escape_markdown(versus)} {team2}\n"
+        
+        if self.start_time:
+            pg_nowtime = datetime.now().astimezone(PRAGUE_TZ)
+            pg_time = self.start_time.astimezone(PRAGUE_TZ)
+            kyiv_time = self.start_time.astimezone(KYIV_TZ)
+            
+            diff_mins = round((pg_time - pg_nowtime).total_seconds()/60)
+            if diff_mins > 60:
+                time_str = f"{pg_time.strftime('%d %b %Y')} | {pg_time.strftime('%H:%M')} European | {kyiv_time.strftime('%H:%M')} Kyiv"
+            elif diff_mins > 0:
+                time_str = f"In {diff_mins} mins"
+            else:
+                time_str = "Already started"
+
+            result += f"{escape_markdown(time_str)}\n"
+        
+        if self.stream_links:
+            for (stream_type, stream_link) in self.stream_links.items():
+                result += f"{get_md_link(stream_type.capitalize(), stream_link)}\n"
+
+        result += "\n"
+        return result
 
 class LiquipediaService:
     def __init__(self, appname, api_route):
@@ -48,7 +87,7 @@ class LiquipediaService:
     def parse(self,page):
         success, soup = False, None
 
-        url = self.base_api_url+'action=parse&format=json&page='+page
+        url = f"{self.base_api_url}action=parse&format=json&page={page}"
         response = requests.get(url, headers=self.__headers)
         if response.status_code == 200:
             try:
@@ -69,14 +108,28 @@ class LiquipediaService:
             soup,__ = self.parse(redirect_value)
             return soup,redirect_value
 
-    def get_upcoming_and_ongoing_games(self, filters:list[Callable[[GameInfo], bool]]=None, max_games=MAX_GAMES) -> list[GameInfo]:
+    def get_upcoming_and_ongoing_games(self, filters:list[Callable[[GameInfo], bool]]=None, max_games=MAX_GAMES, update_stream_links=True) -> list[GameInfo]:
         games = []
         matches = self._get_matches()
         for match in matches:
             try:
                 game = {}
-                game['team1'] = match.find('td', class_='team-left').get_text().strip()		
-                game['team2'] = match.find('td', class_='team-right').get_text().strip()
+
+                team_left = match.find('td', class_='team-left')
+                game['team1'] = team_left.get_text().strip()
+                tl_liq_link = team_left.find('a')
+                if tl_liq_link:
+                    game['team1_liqlink'] = f"{self.base_url}{tl_liq_link.get('href')}"
+
+                team_right = match.find('td', class_='team-right')
+                game['team2'] = team_right.get_text().strip()
+                tr_liq_link = team_right.find('a')
+                if tr_liq_link:
+                    game['team2_liqlink'] = f"{self.base_url}{tr_liq_link.get('href')}"	
+                
+                versus_block = match.find('td', class_='versus')
+                if versus_block:
+                    game['versus'] = versus_block.get_text().strip()
                 
                 match_filler = 	match.find('td', class_='match-filler')
                 tournament_div = match_filler.find('div', class_=self._get_tournament_selector())
@@ -108,10 +161,12 @@ class LiquipediaService:
         games = filter_unique(games, lambda game: (game.team1, game.team2))
         if filters:
             games = list(fy.filter(fy.all_fn(*filters), games))
+        
+        games = games[:max_games]
 
         # Updating links after applying filter since this action requires lots of time-heavy external http calls
-        games = games[:max_games]
-        self.update_stream_links(games)
+        if update_stream_links:
+            self.update_stream_links(games)
 
         return games
     
@@ -150,7 +205,9 @@ class LiquipediaService:
         response = requests.get(url, headers=self.__headers)
         if response.status_code == 200:
             liq_page = BeautifulSoup(response.content, features="lxml")
-            return urlparse(liq_page.find('iframe').get('src'))
+            stream_iframe = liq_page.find('iframe')
+            if stream_iframe:
+                return urlparse(stream_iframe.get('src'))
 
 
 class CsService(LiquipediaService):

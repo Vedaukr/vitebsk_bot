@@ -11,3 +11,4 @@ with open(f"{pathlib.Path.cwd()}\\api-tokens.json") as api_tokens_file:
     BOT_TOKEN = api_tokens["BOT_TOKEN"]
     RAPID_API_SUBSCRIPTION_KEY = api_tokens["RAPID_API_SUBSCRIPTION_KEY"]
     STABILITYAI_TOKEN = api_tokens["STABILITYAI_TOKEN"]
+    TARGET_CHAT_ID = api_tokens["TARGET_CHAT_ID"]

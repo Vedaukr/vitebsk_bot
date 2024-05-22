@@ -5,7 +5,7 @@ from services.openai_service import OpenAiService
 import telebot
 import base64
 
-from utils.escape_markdown import escape_markdown   
+from utils.md_utils import escape_markdown   
 
 param_info = {
     "max_tokens": """The maximum number of tokens that can be generated in the chat completion.
