@@ -18,3 +18,6 @@ STABILITYAI_TOKEN = ""
 
 #temp solution for scheduler
 TARGET_CHAT_ID = ""
+
+#open weather
+OPENWEATHER_API_KEY = ""
