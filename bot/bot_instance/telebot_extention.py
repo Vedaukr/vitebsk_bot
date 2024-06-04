@@ -1,36 +1,76 @@
 import types
+from typing import Iterable, List, Optional, Union
 import telebot
 
 TELEGRAM_MAX_MESSAGE_LENGTH = 4096
-MSG_TEXT_ARGUMENT = "text"
-
-def split_msgs(func):
-    def wrapper(*args, **kwargs):
-        if not MSG_TEXT_ARGUMENT in kwargs:
-            return func(*args, **kwargs)
-        text = kwargs[MSG_TEXT_ARGUMENT]
-        msgs = [text[i:i + TELEGRAM_MAX_MESSAGE_LENGTH] for i in range(0, len(text), TELEGRAM_MAX_MESSAGE_LENGTH)]
-        for msg in msgs:
-            try:
-                kwargs[MSG_TEXT_ARGUMENT] = msg
-                res = func(*args, **kwargs)
-            except Exception:
-                pass
-        return res
-    return wrapper
 
 class TelebotExt(telebot.TeleBot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-    @split_msgs
-    def edit_message_text(self, *args, **kwargs): 
-        return super().edit_message_text(*args, **kwargs)
-
-    @split_msgs    
-    def send_message(self, *args, **kwargs):
-        return super().send_message(*args, **kwargs)
     
-    @split_msgs
-    def reply_to(self, *args, **kwargs):
-        return super().reply_to(*args, **kwargs)
+    def edit_message_text(
+            self, 
+            text: str, 
+            chat_id: Optional[Union[int, str]]=None, 
+            message_id: Optional[int]=None, 
+            inline_message_id: Optional[str]=None, 
+            parse_mode: Optional[str]=None,
+            entities: Optional[List[telebot.types.MessageEntity]]=None,
+            disable_web_page_preview: Optional[bool]=None,
+            reply_markup: Optional[telebot.types.InlineKeyboardMarkup]=None) -> Union[telebot.types.Message, bool]:
+        
+        all_parts = list(self._split_txt(text=text))
+
+        for index, item in enumerate(all_parts):
+            if index == 0:
+                res = super().edit_message_text(text=item, 
+                    chat_id=chat_id, 
+                    message_id=message_id, 
+                    inline_message_id=inline_message_id, 
+                    parse_mode=parse_mode,
+                    entities=entities,
+                    disable_web_page_preview=disable_web_page_preview,
+                    reply_markup=reply_markup)
+            else:
+                res = super().reply_to(text=item, message=res)
+        
+        return res
+   
+    def send_message(
+            self, chat_id: Union[int, str], text: str, 
+            parse_mode: Optional[str]=None, 
+            entities: Optional[List[telebot.types.MessageEntity]]=None,
+            disable_web_page_preview: Optional[bool]=None, 
+            disable_notification: Optional[bool]=None, 
+            protect_content: Optional[bool]=None,
+            reply_to_message_id: Optional[int]=None, 
+            allow_sending_without_reply: Optional[bool]=None,
+            reply_markup: Optional[telebot.types.InlineKeyboardMarkup]=None,
+            timeout: Optional[int]=None,
+            message_thread_id: Optional[int]=None) -> telebot.types.Message:
+        
+        for txt_part in self._split_txt(text=text):
+            res = super().send_message(text=txt_part, 
+                chat_id=chat_id, 
+                parse_mode=parse_mode,
+                entities=entities,
+                disable_web_page_preview=disable_web_page_preview,
+                disable_notification=disable_notification, 
+                protect_content=protect_content,
+                reply_to_message_id=reply_to_message_id, 
+                allow_sending_without_reply=allow_sending_without_reply,
+                reply_markup=reply_markup,
+                timeout=timeout,
+                message_thread_id=message_thread_id)
+        
+        return res
+    
+    def reply_to(self, message: telebot.types.Message, text: str, **kwargs) -> telebot.types.Message:
+        for txt_part in self._split_txt(text=text):
+            res = super().reply_to(message=message, text=txt_part, **kwargs)
+        return res
+    
+    @staticmethod
+    def _split_txt(text: str) -> Iterable[str]:
+        for i in range(0, len(text), TELEGRAM_MAX_MESSAGE_LENGTH):
+            yield text[i:i + TELEGRAM_MAX_MESSAGE_LENGTH] 
