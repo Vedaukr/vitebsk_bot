@@ -49,6 +49,6 @@ Weather:
 
 bot [wf|weather] [city_name] [date]
 date is optional, supports forecasts up to 5 days
-city_name should be written in quotation marks if consists from 2+ words e.g. "Kryvyi Rih"
+city_name has to be written in quotation marks if consists from 2+ words e.g. "Kryvyi Rih"
 
 '''

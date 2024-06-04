@@ -19,6 +19,19 @@ MAX_GAMES = 10
 PRAGUE_TZ = pytz.timezone("Europe/Prague")
 KYIV_TZ = pytz.timezone("Europe/Kiev")
 
+TZ_MAPPING = {
+  "EEST": "UTC+3",
+  "CEST": "UTC+2",
+  "EDT": "UTC-4",
+  "PET": "UTC-5",
+  "BST": "UTC+1",
+  "SGT": "UTC+8",
+  "CST": "UTC-6",
+  "AST": "UTC-4",
+  "PDT": "UTC-7",
+  "BRT": "UTC-3"
+}
+
 @dataclass
 class GameInfo:
     team1: str
@@ -139,7 +152,7 @@ class LiquipediaService:
                 try:
                     start_time = match_filler.find('span', class_="timer-object").get_text()
                     if start_time:
-                        game['start_time'] = parser.parse(start_time)
+                        game['start_time'] = parser.parse(start_time, tzinfos=TZ_MAPPING)
                 except Exception:
                     pass
                 
