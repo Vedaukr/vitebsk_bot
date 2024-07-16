@@ -29,7 +29,9 @@ TZ_MAPPING = {
   "CST": "UTC-6",
   "AST": "UTC-4",
   "PDT": "UTC-7",
-  "BRT": "UTC-3"
+  "BRT": "UTC-3",
+  "AEST": "UTC+10",
+  "ART": "UTC-3",
 }
 
 @dataclass
@@ -156,15 +158,7 @@ class LiquipediaService:
                 except Exception:
                     pass
                 
-                streams_span = match_filler.find_all(lambda tag: any(attr.startswith(DATA_STREAM_ATTR) for attr in tag.attrs))
-                if streams_span:
-                    stream_links = game['stream_links'] = {}
-                    for attr in streams_span[0].attrs:
-                        if attr.startswith(DATA_STREAM_ATTR):
-                            stream_type = attr[len(DATA_STREAM_ATTR):]
-                            channel_name = streams_span[0].get(attr)
-                            stream_links[stream_type] = self.get_stream(channel_name, stream_type)
-                
+                game['stream_links'] = self.get_stream_links(match_filler)
                 game_info = GameInfo(**game)
                 games.append(game_info)	
             
@@ -182,6 +176,17 @@ class LiquipediaService:
             self.update_stream_links(games)
 
         return games
+    
+    def get_stream_links(self, match_filler) -> dict[str, str]:
+        streams_span = match_filler.find_all(lambda tag: any(attr.startswith(DATA_STREAM_ATTR) for attr in tag.attrs))
+        if streams_span:
+            stream_links = {}
+            for attr in streams_span[0].attrs:
+                if attr.startswith(DATA_STREAM_ATTR):
+                    stream_type = attr[len(DATA_STREAM_ATTR):]
+                    channel_name = streams_span[0].get(attr)
+                    stream_links[stream_type] = self.get_stream(channel_name, stream_type)
+            return stream_links
     
     def get_stream(self, stream_id: str, stream_type: str) -> str:
         # Workaround for cases like Twitch2
@@ -230,6 +235,23 @@ class CsService(LiquipediaService):
     @property
     def sport_name(self) -> str:
         return "counterstrike"
+    
+    def get_stream_links(self, match_filler) -> dict[str, str]:
+        filler_links = match_filler.find_all('a')
+        stream_links_tags = [link for link in filler_links if 'Special:Stream' in link.get('href')]
+        if stream_links_tags:
+            stream_links = {}
+            for sl_tag in stream_links_tags:
+                try:
+                    #0    1               2            3               4
+                    # /counterstrike/Special:Stream/twitch/CCT_Counter-Strike_3
+                    parts = sl_tag.get('href').split(r'/')
+                    stream_type, channel_name = parts[3], parts[4]
+                    stream_links[stream_type] = self.get_stream(channel_name, stream_type)
+                except:
+                    continue
+                
+            return stream_links
     
     def _get_matches(self) -> ResultSet[Any]:
         soup, __ = self.parse('Liquipedia:Matches')
