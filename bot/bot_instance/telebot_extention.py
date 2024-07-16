@@ -32,7 +32,10 @@ class TelebotExt(telebot.TeleBot):
                     disable_web_page_preview=disable_web_page_preview,
                     reply_markup=reply_markup)
             else:
-                res = super().reply_to(text=item, message=res)
+                res = super().reply_to(text=item, 
+                                       message=res, 
+                                       disable_web_page_preview=disable_web_page_preview,
+                                       parse_mode=parse_mode)
         
         return res
    
@@ -72,5 +75,9 @@ class TelebotExt(telebot.TeleBot):
     
     @staticmethod
     def _split_txt(text: str) -> Iterable[str]:
+        if len(text) <= TELEGRAM_MAX_MESSAGE_LENGTH:
+            yield text
+            return
+        
         for i in range(0, len(text), TELEGRAM_MAX_MESSAGE_LENGTH):
             yield text[i:i + TELEGRAM_MAX_MESSAGE_LENGTH] 

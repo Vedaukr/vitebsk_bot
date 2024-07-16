@@ -9,7 +9,7 @@ class DupDetector:
     def __init__(self, threshold=10) -> None:
         self.threshold = threshold
 
-    def detect_image_duplicate(self, image, images, dup_number=3):
+    def detect_image_duplicate(self, image, images, dup_number=7):
         phash = self.get_phash(image)
         sim_arr = []
         for img in images:
