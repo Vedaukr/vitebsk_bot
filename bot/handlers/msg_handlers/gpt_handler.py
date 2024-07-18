@@ -18,14 +18,15 @@ The total length of input tokens and generated tokens is limited by the model's 
 # Singletons
 openai_service = OpenAiService()
 
-@bot_instance.message_handler(func=msg_starts_with_filter(("gpt ", "гпт ")))
+@bot_instance.message_handler(func=msg_starts_with_filter(("gpt ", "гпт ")), content_types=['text', 'photo'])
 @tg_exception_handler
 @continue_handling
 def gpt_handler(message: telebot.types.Message):
     bot_reply = bot_instance.reply_to(message, "generating...")    
+    base64_image, img_ext = try_get_image(message)  
     msg_text = get_msg_text(message)
     prompt = get_prompt(msg_text)
-    openai_response = openai_service.generate_text(prompt, model_name="gpt-3.5-turbo", user_id=str(message.from_user.id))
+    openai_response = openai_service.generate_text(prompt, model_name="gpt-4o-mini", user_id=str(message.from_user.id), base64_image=base64_image, img_ext=img_ext)
     try:
         bot_instance.edit_message_text(escape_markdown(openai_response, entity_type='code'), message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
     except Exception:
