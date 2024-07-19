@@ -76,8 +76,60 @@ class TelebotExt(telebot.TeleBot):
     @staticmethod
     def _split_txt(text: str) -> Iterable[str]:
         if len(text) <= TELEGRAM_MAX_MESSAGE_LENGTH:
-            yield text
-            return
-        
+            return [text]
+        try:
+            return TelebotExt._split_nicely(text)
+        except Exception as e:
+            return TelebotExt._split_naively(text)
+    
+    @staticmethod
+    def _split_naively(text: str) -> Iterable[str]:
         for i in range(0, len(text), TELEGRAM_MAX_MESSAGE_LENGTH):
             yield text[i:i + TELEGRAM_MAX_MESSAGE_LENGTH] 
+    
+    @staticmethod
+    def _split_nicely(text: str) -> Iterable[str]:
+        def split_and_leave_separator(sep: str, string: str):
+            if sep == '':
+                return list(string)
+            
+            return [f"{chunk}{sep}" for chunk in string.split(sep)]
+            
+        char_split_order = ('\n', ' ', '')
+        str_chunks = split_and_leave_separator(char_split_order[0], text)
+        big_chunks_map = {} # index to chunk map
+
+        for sep in char_split_order[1:]:
+            big_chunks_map = {
+                index: split_and_leave_separator(sep, chunk) 
+                for index, chunk in enumerate(str_chunks) 
+                if len(chunk) > TELEGRAM_MAX_MESSAGE_LENGTH
+            }
+            if not big_chunks_map:
+                break
+            
+            new_str_chunks = []
+            for index, chunk in enumerate(str_chunks):
+                if index in big_chunks_map:
+                    new_str_chunks.extend(big_chunks_map[index])
+                else:
+                    new_str_chunks.append(chunk)
+            str_chunks = new_str_chunks
+
+        # Merge chunks
+        res_chunks = []
+        prev_accum_str = ""
+        accum_str = ""
+
+        for chunk in str_chunks:
+            accum_str += chunk
+            if len(accum_str) > TELEGRAM_MAX_MESSAGE_LENGTH:
+                res_chunks.append(prev_accum_str)
+                prev_accum_str = accum_str = chunk
+                continue
+            prev_accum_str = accum_str
+        
+        res_chunks.append(accum_str)
+        return res_chunks
+
+        
