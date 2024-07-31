@@ -27,11 +27,6 @@ TEST_MSG = """To split a string by line breaks in Python, you can use the `split
 @bot_instance.message_handler(commands=['test'])
 @tg_exception_handler
 def handle_image_count(message: telebot.types.Message):
-    test_msg = "0"*5000
-    test_msg  = f"{test_msg} \n*TEST MARKDOWN*"
-    test = bot_instance.send_message(message.chat.id, "wo md")
-    test = bot_instance.send_message(message.chat.id, TEST_MSG)
-    test = bot_instance.send_message(message.chat.id, "with md")
-    test = bot_instance.send_message(message.chat.id, escape_markdown(TEST_MSG), parse_mode="MarkdownV2")
-    #bot_instance.edit_message_text(test_msg, chat_id=message.chat.id, message_id=test.message_id, parse_mode="MarkdownV2")
+    test_msg =f"{'0'*1000}\n{'1'*1000}\n{'2'*1000}\n{'3'*1000}\n{'4'*1000}\n{'5'*1000}\n{'6'*1000}\n{'7'*1000}\n{'8'*1000}\n{'9'*1000}\n"
+    test = bot_instance.send_message(message.chat.id, test_msg)
 

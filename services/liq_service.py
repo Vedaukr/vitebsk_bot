@@ -44,7 +44,7 @@ class GameInfo:
     team2_liqlink: Optional[str] = None
     versus: Optional[str] = None
     start_time: Optional[datetime] = None
-    stream_links: Optional[dict[str, str]] = None
+    stream_links: Optional[dict[str, list[str]]] = None
 
     def to_md_string(self) -> str:
         result = ""
@@ -71,8 +71,9 @@ class GameInfo:
             result += f"{escape_markdown(time_str)}\n"
         
         if self.stream_links:
-            for (stream_type, stream_link) in self.stream_links.items():
-                result += f"{get_md_link(stream_type.capitalize(), stream_link)}\n"
+            for (stream_type, stream_links) in self.stream_links.items():
+                for stream_link in stream_links:
+                    result += f"{get_md_link(stream_type.capitalize(), stream_link)}\n"
 
         result += "\n"
         return result
@@ -178,45 +179,54 @@ class LiquipediaService:
         return games
     
     def get_stream_links(self, match_filler) -> dict[str, str]:
-        streams_span = match_filler.find_all(lambda tag: any(attr.startswith(DATA_STREAM_ATTR) for attr in tag.attrs))
-        if streams_span:
-            stream_links = {}
-            for attr in streams_span[0].attrs:
-                if attr.startswith(DATA_STREAM_ATTR):
-                    stream_type = attr[len(DATA_STREAM_ATTR):]
-                    channel_name = streams_span[0].get(attr)
-                    stream_links[stream_type] = self.get_stream(channel_name, stream_type)
+        filler_links = match_filler.find_all('a')
+        stream_links_tags = [link for link in filler_links if 'Special:Stream' in link.get('href')]
+        if stream_links_tags:
+            stream_links: dict[str, list[str]] = {}
+            for sl_tag in stream_links_tags:
+                try:
+                    #0    1               2            3               4
+                    # /counterstrike/Special:Stream/twitch/CCT_Counter-Strike_3
+                    # /dota2/Special:Stream/twitch/Relog_Media_EN2
+                    stream_link = sl_tag.get('href')
+                    parts = stream_link.split(r'/')
+                    stream_type = parts[3]
+
+                    if not stream_type in stream_links:
+                        stream_links[stream_type] = []
+                    
+                    stream_links[stream_type].append(self.get_full_stream_link(stream_link))
+                except:
+                    continue
+                
             return stream_links
     
-    def get_stream(self, stream_id: str, stream_type: str) -> str:
-        # Workaround for cases like Twitch2
-        if str.isnumeric(stream_type[-1]):
-            stream_type = stream_type[:-1]
-        
-        return f"{self.base_url}/{self.sport_name}/Special:Stream/{stream_type}/{stream_id}"
+    def get_full_stream_link(self, stream_link: str) -> str:
+        return f"{self.base_url}{stream_link}"
 
     def update_stream_links(self, games: Iterable[GameInfo]):
         for game in games:
             if game.stream_links:
-                for (stream_type, liq_link) in game.stream_links.items():
-                    try:
-                        if stream_type.startswith("twitch"):
-                            ssurl = self.try_get_stream_service_url(liq_link)
-                            if ssurl:
-                                game.stream_links[stream_type] = f"https://www.twitch.tv/{parse_qs(ssurl.query)['channel'][0]}"
+                for (stream_type, liq_links) in game.stream_links.items():
+                    for index, liq_link in enumerate(liq_links):
+                        try:
+                            if stream_type.startswith("twitch"):
+                                ssurl = self.try_get_stream_service_url(liq_link)
+                                if ssurl:
+                                    liq_links[index] = f"https://www.twitch.tv/{parse_qs(ssurl.query)['channel'][0]}"
 
-                        elif stream_type.startswith("youtube"):
-                            ssurl = self.try_get_stream_service_url(liq_link)
-                            if ssurl:
-                                game.stream_links[stream_type] = f"https://www.youtube.com/watch?v={ssurl.path.split('/')[-1]}"
-                        
-                        elif stream_type.startswith("kick"):
-                            ssurl = self.try_get_stream_service_url(liq_link)
-                            if ssurl:
-                                game.stream_links[stream_type] = f"https://kick.com/{ssurl.path.split('/')[-1]}"
+                            elif stream_type.startswith("youtube"):
+                                ssurl = self.try_get_stream_service_url(liq_link)
+                                if ssurl:
+                                    liq_links[index] = f"https://www.youtube.com/watch?v={ssurl.path.split('/')[-1]}"
+                            
+                            elif stream_type.startswith("kick"):
+                                ssurl = self.try_get_stream_service_url(liq_link)
+                                if ssurl:
+                                    liq_links[index] = f"https://kick.com/{ssurl.path.split('/')[-1]}"
 
-                    except Exception:
-                        pass
+                        except Exception:
+                            pass
     
     @functools.lru_cache(maxsize=100, typed=False)
     def try_get_stream_service_url(self, url):
@@ -235,23 +245,6 @@ class CsService(LiquipediaService):
     @property
     def sport_name(self) -> str:
         return "counterstrike"
-    
-    def get_stream_links(self, match_filler) -> dict[str, str]:
-        filler_links = match_filler.find_all('a')
-        stream_links_tags = [link for link in filler_links if 'Special:Stream' in link.get('href')]
-        if stream_links_tags:
-            stream_links = {}
-            for sl_tag in stream_links_tags:
-                try:
-                    #0    1               2            3               4
-                    # /counterstrike/Special:Stream/twitch/CCT_Counter-Strike_3
-                    parts = sl_tag.get('href').split(r'/')
-                    stream_type, channel_name = parts[3], parts[4]
-                    stream_links[stream_type] = self.get_stream(channel_name, stream_type)
-                except:
-                    continue
-                
-            return stream_links
     
     def _get_matches(self) -> ResultSet[Any]:
         soup, __ = self.parse('Liquipedia:Matches')
@@ -275,5 +268,5 @@ class DotaService(LiquipediaService):
         return soup.find_all('table', class_='infobox_matches_content')
     
     def _get_tournament_selector(self) -> str:
-        return 'tournament-text'
+        return 'tournament-text-flex'
     
