@@ -26,7 +26,7 @@ TZ_MAPPING = {
   "PET": "UTC-5",
   "BST": "UTC+1",
   "SGT": "UTC+8",
-  "CST": "UTC-6",
+  "CST": "UTC+8",
   "AST": "UTC-4",
   "PDT": "UTC-7",
   "BRT": "UTC-3",
@@ -153,9 +153,13 @@ class LiquipediaService:
                 game['tournament_link'] = f"{self.base_url}{tournament_div.find('a').get('href')}"
 
                 try:
-                    start_time = match_filler.find('span', class_="timer-object").get_text()
-                    if start_time:
-                        game['start_time'] = parser.parse(start_time, tzinfos=TZ_MAPPING)
+                    start_time_span = match_filler.find('span', class_="timer-object")
+                    if start_time_span:
+                        data_timestamp = start_time_span.attrs.get('data-timestamp')
+                        if data_timestamp:
+                            game['start_time'] = datetime.fromtimestamp(int(data_timestamp))
+                        else:
+                            game['start_time'] = parser.parse(start_time_span.get_text(), tzinfos=TZ_MAPPING)
                 except Exception:
                     pass
                 
