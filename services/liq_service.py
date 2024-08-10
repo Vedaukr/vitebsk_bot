@@ -10,6 +10,7 @@ from utils.filter_utils import filter_unique
 from urllib.parse import urlparse, parse_qs
 import pytz
 import requests
+import logging
 import abc
 import funcy as fy
 
@@ -33,6 +34,8 @@ TZ_MAPPING = {
   "AEST": "UTC+10",
   "ART": "UTC-3",
 }
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class GameInfo:
@@ -160,15 +163,15 @@ class LiquipediaService:
                             game['start_time'] = datetime.fromtimestamp(int(data_timestamp))
                         else:
                             game['start_time'] = parser.parse(start_time_span.get_text(), tzinfos=TZ_MAPPING)
-                except Exception:
-                    pass
+                except AttributeError as atr_ex:
+                    logger.error(f"Attribute error in LiquipediaService: {atr_ex}")
                 
                 game['stream_links'] = self.get_stream_links(match_filler)
                 game_info = GameInfo(**game)
                 games.append(game_info)	
             
-            except AttributeError:
-                continue		
+            except AttributeError as atr_ex:
+                logger.error(f"Attribute error in LiquipediaService: {atr_ex}")
         
         games = filter_unique(games, lambda game: (game.team1, game.team2))
         if filters:
@@ -229,8 +232,8 @@ class LiquipediaService:
                                 if ssurl:
                                     liq_links[index] = f"https://kick.com/{ssurl.path.split('/')[-1]}"
 
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            logger.error(f"Error occured while updating {liq_link}:\n{e}")
     
     @functools.lru_cache(maxsize=100, typed=False)
     def try_get_stream_service_url(self, url):

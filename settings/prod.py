@@ -4,6 +4,7 @@ import os
 BASE_DIR = "/app/data"
 SQLALCHEMY_DATABASE_URI =  f'sqlite:///{os.path.join(BASE_DIR, DB_NAME)}'
 BOT_TOKEN = os.environ["BOT_TOKEN"] 
+LOGS_PATH =  os.path.join(BASE_DIR, "logs", LOGS_FILENAME)
 
 OPENAI_TOKEN = os.environ["OPENAI_TOKEN"] 
 STABILITYAI_TOKEN = os.environ["STABILITYAI_TOKEN"] 

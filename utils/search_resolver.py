@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from utils.singleton import Singleton
 from utils.md_utils import escape_markdown
-import requests, re
+import requests, re, logging
+
+logger = logging.getLogger(__name__)
 
 class SiteSearchHandler(ABC):
     def __init__(self) -> None:
@@ -39,8 +41,7 @@ class SiteSearchHandler(ABC):
             if match:
                 return match.group(1)
         except Exception as e:
-            print(e.with_traceback(None))
-            return None
+            logger.error(f"Error while trying to get header from link {link}:\n{e}.")
 
 class SearchResolver(metaclass=Singleton):
     def __init__(self) -> None:

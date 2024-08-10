@@ -1,4 +1,6 @@
 import telebot
+import logging
+import traceback
 from typing import Callable
 from bot.bot_instance.bot import bot_instance
 
@@ -49,23 +51,17 @@ def get_msg_text(message: telebot.types.Message):
     return ""
 
 def tg_exception_handler(func):
+    logger = logging.getLogger(__name__)
     def wrapper(*args, **kwargs):
         try:
             res = func(*args, **kwargs)
             return res
         except Exception as ex:
-            exception_report = {
-                "event": {
-                    "method": func.__name__,
-                    "message": str(ex),
-                    "args": args,
-                    "kwargs": kwargs
-                }
-            }
-
-            message = args[0]
-            print('exception_report ', exception_report)
-            bot_instance.reply_to(message, f"Something fucked up: {str(ex.with_traceback(None))}\nException report:\n {exception_report}")
+            message: telebot.types.Message = args[0]
+            message.content_type
+            log_msg = f'Telegram message: {get_msg_text(message)}\nContent type: {message.content_type}\nResulted in following error: \n{traceback.format_exc()}'   
+            logger.error(log_msg)
+            bot_instance.reply_to(message, log_msg)
 
     return wrapper
 

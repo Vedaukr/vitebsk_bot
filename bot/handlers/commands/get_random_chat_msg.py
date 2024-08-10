@@ -20,3 +20,4 @@ def get_random_chat_msg(message: telebot.types.Message):
             break
         except Exception as e:
             pass
+    raise ValueError(f"Unlucky, {MAX_TRIES} tries ended up in retrieving deleted message.")

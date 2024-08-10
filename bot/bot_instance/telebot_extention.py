@@ -1,7 +1,9 @@
 import types
 from typing import Iterable, List, Optional, Union
 import telebot
+import logging
 
+logger = logging.getLogger(__name__)
 TELEGRAM_MAX_MESSAGE_LENGTH = 4096
 
 class TelebotExt(telebot.TeleBot):
@@ -80,6 +82,7 @@ class TelebotExt(telebot.TeleBot):
         try:
             return TelebotExt._split_nicely(text)
         except Exception as e:
+            logger.error(f"Tg message split failed with exception: {e}.")
             return TelebotExt._split_naively(text)
     
     @staticmethod

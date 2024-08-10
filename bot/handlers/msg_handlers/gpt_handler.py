@@ -4,6 +4,7 @@ from bot.handlers.shared import tg_exception_handler, continue_handling, msg_sta
 from services.openai_service import OpenAiService
 import telebot
 import base64
+import logging
 
 from utils.md_utils import escape_markdown   
 
@@ -17,6 +18,7 @@ The total length of input tokens and generated tokens is limited by the model's 
 
 # Singletons
 openai_service = OpenAiService()
+logger = logging.getLogger(__name__)
 
 @bot_instance.message_handler(func=msg_starts_with_filter(("gpt ", "гпт ")), content_types=['text', 'photo'])
 @tg_exception_handler
@@ -29,7 +31,8 @@ def gpt_handler(message: telebot.types.Message):
     openai_response = openai_service.generate_text(prompt, model_name="gpt-4o-mini", user_id=str(message.from_user.id), base64_image=base64_image, img_ext=img_ext)
     try:
         bot_instance.edit_message_text(escape_markdown(openai_response, entity_type='code'), message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
-    except Exception:
+    except Exception as ex:
+        logger.error(f"Markdown error: {ex}.\nMessage in question:\n{openai_response}")
         bot_instance.edit_message_text(openai_response, message.chat.id, bot_reply.message_id)
 
 
@@ -44,7 +47,8 @@ def gpt4_handler(message: telebot.types.Message):
     openai_response = openai_service.generate_text(prompt, model_name="gpt-4o", user_id=str(message.from_user.id), base64_image=base64_image, img_ext=img_ext)
     try:
         bot_instance.edit_message_text(escape_markdown(openai_response, entity_type='code'), message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
-    except Exception:
+    except Exception as ex:
+        logger.error(f"Markdown error: {ex}.\nMessage in question:\n{openai_response}")
         bot_instance.edit_message_text(openai_response, message.chat.id, bot_reply.message_id)
 
 @bot_instance.message_handler(commands=["get_gpt_params"])

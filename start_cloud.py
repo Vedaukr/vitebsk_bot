@@ -2,14 +2,17 @@ import telebot, os
 from import_bot import bot_instance
 from flask import Flask, request
 from settings import BOT_NAME
+import logging
+
 
 host = os.environ["BOT_HOST"]
 server = Flask(__name__)
+logger = logging.getLogger(__name__)
 
 try:
     bot_instance.set_webhook(url=f'{host}/{BOT_NAME}')
 except Exception as e:
-    print(e)
+    logger.error(e.with_traceback(None))
     bot_instance.remove_webhook()
     bot_instance.set_webhook(url=f'{host}/{BOT_NAME}')
 
