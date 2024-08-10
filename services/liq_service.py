@@ -51,8 +51,8 @@ class GameInfo:
         result += f"{get_md_link(self.tournament, self.tournament_link)}\n"
 
         versus = self.versus if self.versus else '-'
-        team1 = get_md_link(self.team1, self.team1_liqlink) if self.team1_liqlink else self.team1
-        team2 = get_md_link(self.team2, self.team2_liqlink) if self.team2_liqlink else self.team2
+        team1 = get_md_link(self.team1, self.team1_liqlink) if self.team1_liqlink else escape_markdown(self.team1)
+        team2 = get_md_link(self.team2, self.team2_liqlink) if self.team2_liqlink else escape_markdown(self.team2)
         result += f"{team1} {escape_markdown(versus)} {team2}\n"
         
         if self.start_time:
