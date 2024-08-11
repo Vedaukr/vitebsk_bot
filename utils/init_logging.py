@@ -20,13 +20,14 @@ def setup_logging():
     # Add console handler to the logger
     logger.addHandler(ch)
 
-    if not os.path.exists(LOGS_PATH):
+    if not os.path.exists(os.path.dirname(LOGS_PATH)):
         os.makedirs(os.path.dirname(LOGS_PATH))
 
     # Create a timed rotating file handler for rotating logs by day
-    date_based_handler = TimedRotatingFileHandler(LOGS_PATH, when='midnight', interval=1, backupCount=30)  # Daily rotation, keeping last 7 days
+    date_based_handler = TimedRotatingFileHandler(LOGS_PATH, when='midnight', interval=1, backupCount=30) 
     date_based_handler.suffix = "%Y-%m-%d"
     date_based_handler.setFormatter(formatter)
+    date_based_handler.namer = lambda name: name.replace(".log", "") + ".log"
 
     # Add date-based file handler to the logger
     logger.addHandler(date_based_handler)
