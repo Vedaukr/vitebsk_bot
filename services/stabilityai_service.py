@@ -23,11 +23,8 @@ class StabilityAiService(metaclass=Singleton):
                 "output_format": "jpeg",
             },
         )
-
-        if response.status_code == 200:
-            return response.content
-        
-        raise Exception("StabilityAi: non-200 response: " + str(response.text))
+        response.raise_for_status()
+        return response.content
     
     
     def generate_image(self, prompt: str, engine_id: str = "stable-diffusion-xl-1024-v1-0") -> bytes:
@@ -51,14 +48,8 @@ class StabilityAiService(metaclass=Singleton):
                 "steps": 30,
             },
         )
-
-        if response.status_code != 200:
-            raise Exception("StabilityAi: non-200 response: " + str(response.text))
-
+        response.raise_for_status()
+        
         data = response.json()
         artifact = data["artifacts"][0]
-        
-        if artifact["finishReason"] == CONTENT_FILTERED:
-            raise Exception("StabilityAi: CONTENT_FILTERED you perv.")
-        
         return base64.b64decode(artifact["base64"])
