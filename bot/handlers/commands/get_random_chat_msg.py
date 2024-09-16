@@ -17,7 +17,7 @@ def get_random_chat_msg(message: telebot.types.Message):
             msg_id = np.random.choice(message.id)
             fwd = bot_instance.forward_message(chat_id=chat_id, from_chat_id=chat_id, message_id=msg_id)
             bot_instance.reply_to(message=fwd, text=f"Link: https://t.me/c/{normalize_tg_chat_id(chat_id)}/{msg_id}")
-            break
+            return
         except Exception as e:
             pass
     raise ValueError(f"Unlucky, {MAX_TRIES} tries ended up in retrieving deleted message.")

@@ -15,7 +15,7 @@ def handle_rtf(message: telebot.types.Message):
         try:
             msg_id = random.randint(0, RTF_MSG_COUNT)
             bot_instance.forward_message(message.chat.id, RTF_CHANELL_ID, msg_id)
-            break
+            return
         except Exception as e:
             pass
     raise ValueError(f"Unlucky, {MAX_TRIES} tries ended up in retrieving deleted message.")
