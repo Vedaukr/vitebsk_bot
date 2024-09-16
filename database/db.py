@@ -34,16 +34,16 @@ class DbAccessor(metaclass=Singleton):
             session.commit()
             
     def get_images_by_chat_id(self, chatId):
-        session = Session(self.engine)
-        stmt = select(Image).where(Image.chatId.in_([chatId]))
-        return session.scalars(stmt)
+        with Session(self.engine) as session:
+            stmt = select(Image).where(Image.chatId.in_([chatId]))
+            return list(session.scalars(stmt))
 
     def get_videos_by_chat_id(self, chatId):
-        session = Session(self.engine)
-        stmt = select(Video).where(Video.chatId.in_([chatId]))
-        return session.scalars(stmt)
+        with Session(self.engine) as session:
+            stmt = select(Video).where(Video.chatId.in_([chatId]))
+            return list(session.scalars(stmt))
     
     def get_drating_by_chat_id(self, chatId):
-        session = Session(self.engine)
-        stmt = select(DementiaRating).where(DementiaRating.chatId.in_([chatId]))
-        return session.scalars(stmt)
+        with Session(self.engine) as session:
+            stmt = select(DementiaRating).where(DementiaRating.chatId.in_([chatId]))
+            return list(session.scalars(stmt))
