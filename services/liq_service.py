@@ -93,13 +93,19 @@ class LiquipediaService:
     @abc.abstractmethod
     def sport_name(self) -> str:
         pass
+    
+    @property
+    @abc.abstractmethod
+    def tournament_selector(self) -> str:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def match_details_selector(self) -> str:
+        pass
 
     @abc.abstractmethod
     def _get_matches(self) -> ResultSet[Any]:
-        pass
-    
-    @abc.abstractmethod
-    def _get_tournament_selector(self) -> str:
         pass
 
     # Todo: refactor 
@@ -130,33 +136,37 @@ class LiquipediaService:
     def get_upcoming_and_ongoing_games(self, filters:list[Callable[[GameInfo], bool]]=None, max_games=MAX_GAMES, update_stream_links=True) -> list[GameInfo]:
         games = []
         matches = self._get_matches()
+        
+        if not matches:
+            logger.warning("No matches were found in liquepedia service.")
+        
         for match in matches:
             try:
                 game = {}
 
-                team_left = match.find('td', class_='team-left')
+                team_left = match.find(class_='team-left')
                 game['team1'] = team_left.get_text().strip()
                 tl_liq_link = team_left.find('a')
                 if tl_liq_link:
                     game['team1_liqlink'] = f"{self.base_url}{tl_liq_link.get('href')}"
 
-                team_right = match.find('td', class_='team-right')
+                team_right = match.find(class_='team-right')
                 game['team2'] = team_right.get_text().strip()
                 tr_liq_link = team_right.find('a')
                 if tr_liq_link:
                     game['team2_liqlink'] = f"{self.base_url}{tr_liq_link.get('href')}"	
                 
-                versus_block = match.find('td', class_='versus')
+                versus_block = match.find(class_='versus')
                 if versus_block:
                     game['versus'] = versus_block.get_text().strip()
                 
-                match_filler = 	match.find('td', class_='match-filler')
-                tournament_div = match_filler.find('div', class_=self._get_tournament_selector())
+                match_details = 	match.find(class_=self.match_details_selector)
+                tournament_div = match_details.find(class_=self.tournament_selector)
                 game['tournament'] = tournament_div.get_text().strip()
                 game['tournament_link'] = f"{self.base_url}{tournament_div.find('a').get('href')}"
 
                 try:
-                    start_time_span = match_filler.find('span', class_="timer-object")
+                    start_time_span = match_details.find(class_="timer-object")
                     if start_time_span:
                         data_timestamp = start_time_span.attrs.get('data-timestamp')
                         if data_timestamp:
@@ -166,7 +176,7 @@ class LiquipediaService:
                 except AttributeError as atr_ex:
                     logger.error(f"Attribute error in LiquipediaService: {atr_ex}")
                 
-                game['stream_links'] = self.get_stream_links(match_filler)
+                game['stream_links'] = self.get_stream_links(match_details)
                 game_info = GameInfo(**game)
                 games.append(game_info)	
             
@@ -185,8 +195,8 @@ class LiquipediaService:
 
         return games
     
-    def get_stream_links(self, match_filler) -> dict[str, str]:
-        filler_links = match_filler.find_all('a')
+    def get_stream_links(self, match_details) -> dict[str, str]:
+        filler_links = match_details.find_all('a')
         stream_links_tags = [link for link in filler_links if 'Special:Stream' in link.get('href')]
         if stream_links_tags:
             stream_links: dict[str, list[str]] = {}
@@ -253,13 +263,17 @@ class CsService(LiquipediaService):
     def sport_name(self) -> str:
         return "counterstrike"
     
+    @property
+    def tournament_selector(self) -> str:
+         return 'text-nowrap'
+    
+    @property
+    def match_details_selector(self) -> str:
+        return 'match-filler'
+    
     def _get_matches(self) -> ResultSet[Any]:
         soup, __ = self.parse('Liquipedia:Matches')
         return soup.find_all('table', class_='infobox_matches_content')
-    
-    def _get_tournament_selector(self) -> str:
-        # I hate Liquipedia
-        return 'text-nowrap'
         
     
 class DotaService(LiquipediaService):
@@ -270,10 +284,17 @@ class DotaService(LiquipediaService):
     def sport_name(self) -> str:
         return "dota2"
     
+    @property
+    def tournament_selector(self) -> str:
+        return 'tournament-text' 
+    
+    @property
+    def match_details_selector(self) -> str:
+        return 'match-details'
+    
     def _get_matches(self) -> ResultSet[Any]:
         soup, __ = self.parse('Liquipedia:Upcoming_and_ongoing_matches')
-        return soup.find_all('table', class_='infobox_matches_content')
+        return soup.find_all('div', class_='match')
     
-    def _get_tournament_selector(self) -> str:
-        return 'tournament-text-flex'
+    
     
