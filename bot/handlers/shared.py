@@ -45,7 +45,7 @@ def msg_starts_with_filter(starts_with: tuple[str]) -> Callable[[telebot.types.M
 
 def get_msg_text(message: telebot.types.Message):
     if message.text:
-        return message.text
+        return message.text + " " + message.reply_to_message.text if message.reply_to_message else message.text
     if message.caption:
         return message.caption
     return ""
