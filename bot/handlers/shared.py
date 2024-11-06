@@ -44,10 +44,15 @@ def msg_starts_with_filter(starts_with: tuple[str]) -> Callable[[telebot.types.M
     return filter_lambda
 
 def get_msg_text(message: telebot.types.Message):
+    reply_part = ""
+    if message.reply_to_message:
+        reply_part = f": {get_msg_text(message.reply_to_message)}"
+
     if message.text:
-        return message.text + " " + message.reply_to_message.text if message.reply_to_message else message.text
+        return message.text + reply_part
     if message.caption:
         return message.caption
+    
     return ""
 
 def tg_exception_handler(func):
