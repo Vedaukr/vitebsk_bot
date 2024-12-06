@@ -25,6 +25,8 @@ class SiteSearchHandler(ABC):
         message = "Results:\n"
         for count,link in enumerate(links):
             header = self.get_link_header(link)
+            if not header:
+                header = "Untitled"
             message += f"{count + 1}\. [{escape_markdown(header)}]({escape_markdown(link)})\n"
         return message
     
@@ -100,6 +102,20 @@ class WikiHandler(SiteSearchHandler):
     def get_site_uri(self) -> str:
         return "wikipedia.org"
     
+class WikiCzHandler(SiteSearchHandler):
+    def get_triggers(self) -> tuple[str]:
+        return ("wikicz", "wcz")
+    
+    def get_site_uri(self) -> str:
+        return "cs.wiktionary.org"
+    
+class SeznamCzHandler(SiteSearchHandler):
+    def get_triggers(self) -> tuple[str]:
+        return ("seznamcz", "scz")
+    
+    def get_site_uri(self) -> str:
+        return "slovnik.seznam.cz"
+    
 class YoutubeHandler(SiteSearchHandler):
     def get_triggers(self) -> tuple[str]:
         return ("youtube", "yt", "ютуб", "в")
@@ -120,5 +136,7 @@ search_resolver.register_handler(StackExchangeHandler())
 search_resolver.register_handler(RedditHandler())
 search_resolver.register_handler(HabrHandler())
 search_resolver.register_handler(WikiHandler())
+search_resolver.register_handler(WikiCzHandler())
+search_resolver.register_handler(SeznamCzHandler())
 search_resolver.register_handler(YoutubeHandler())
 search_resolver.register_handler(DefaultHandler())

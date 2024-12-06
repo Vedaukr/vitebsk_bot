@@ -9,8 +9,8 @@ openai.organization = OPENAI_ORGANIZATION
 openai.api_key = OPENAI_TOKEN
 
 default_settings = {
-    "max_tokens": 1000,
-    "temperature": 0.9,
+    "max_tokens": 2000,
+    "temperature": 0.75,
     "frequency_penalty": 0.4,
     "presence_penalty": 0.6,
 }

@@ -6,7 +6,7 @@ from scheduler.bot_scheduler import scheduler_instance
 from settings import TARGET_CHAT_ID
 
 HOUR = 60*60
-TEAM_NAMES = ["navi", "natus vincere", "monte", "b8"]
+TEAM_NAMES = ["navi", "natus vincere", "passion ua", "b8"]
 
 PRAGUE_TZ = pytz.timezone("Europe/Prague")
 KYIV_TZ = pytz.timezone("Europe/Kiev")
