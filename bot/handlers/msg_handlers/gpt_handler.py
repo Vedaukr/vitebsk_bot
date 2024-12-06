@@ -36,14 +36,14 @@ logger = logging.getLogger(__name__)
 @tg_exception_handler
 @continue_handling
 def gpt_handler(message: telebot.types.Message):
-    bot_reply = bot_instance.reply_to(message, "generating...")    
     base64_image, img_ext = try_get_image(message)
     msg_text = get_msg_text(message)
 
     model_name, is_exact_match = get_model_name(msg_text)
     if not is_exact_match:
-        bot_instance.reply_to(message, f"Model with name {msg_text.split()[0]} was not found, using {model_name} instead.")    
+        bot_instance.reply_to(message, f"Model with name {msg_text.split()[0].lower()} was not found, using {model_name} instead.")    
 
+    bot_reply = bot_instance.reply_to(message, "generating...")    
     prompt = get_prompt(msg_text)
     openai_response = openai_service.generate_text(prompt, model_name=model_name, user_id=str(message.from_user.id), base64_image=base64_image, img_ext=img_ext)
     try:
@@ -96,7 +96,7 @@ def set_params_handler(message: telebot.types.Message):
 
 # Returns model_name and flag if exact model name is available
 def get_model_name(message: str) -> tuple[str, bool]:
-    trigger = message.split(" ")[0]
+    trigger = message.split(" ")[0].lower()
     if trigger in default_gpt_model_mapping:
         return default_gpt_model_mapping[trigger], True
     

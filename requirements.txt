@@ -9,6 +9,7 @@ SQLAlchemy==2.0.9
 Werkzeug==2.2.2
 openai==0.28
 google==3.0.0
+python-Levenshtein==0.26.1
 numpy
 lxml
 python-dateutil
