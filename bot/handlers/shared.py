@@ -64,9 +64,8 @@ def tg_exception_handler(func):
         except Exception as ex:
             message: telebot.types.Message = args[0]
             message.content_type
-            log_msg = f'Telegram message: {get_msg_text(message)}\nContent type: {message.content_type}\nResulted in following error: \n{traceback.format_exc()}'   
-            logger.error(log_msg)
-            bot_instance.reply_to(message, log_msg)
+            logger.error(f'Telegram message: {get_msg_text(message)}\nResulted in following error: \n{traceback.format_exc()}')
+            bot_instance.reply_to(message, f'Telegram message: {get_msg_text(message)}\nResulted in following error: \n{ex}')
 
     return wrapper
 

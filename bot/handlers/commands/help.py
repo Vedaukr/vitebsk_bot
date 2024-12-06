@@ -16,11 +16,15 @@ for handler in search_resolver.handlers:
 help_message = rf'''
 GPT:
 
-version 3.5 (only text):
+version 4o mini (text + image), reply to message with photo also works::
 gpt [prompt]
 
-version 4 (text + image), reply to message with photo also works:
+version 40 (text + image), reply to message with photo also works:
 gpt4 [prompt]
+
+Use /get_available_openai_models to see full list of models, 
+you can try any from the list, no guarantee that it will work though:
+gpt-4o-realtime-preview [prompt]
 
 CS/Dota matches:
 
