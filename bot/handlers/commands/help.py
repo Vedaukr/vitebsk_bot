@@ -1,7 +1,7 @@
 from bot.bot_instance.bot import bot_instance
 from bot.handlers.shared import tg_exception_handler
 import telebot
-from utils.search_resolver import search_resolver
+from settings.base import default_search_resolver
 
 @bot_instance.message_handler(commands=['help'])
 @tg_exception_handler
@@ -9,9 +9,9 @@ def get_bot_triggers(message: telebot.types.Message):
     bot_instance.reply_to(message, help_message)
 
 search_triggers = "Search triggers:\n"
-for handler in search_resolver.handlers:
-    uri = handler.get_site_uri()
-    search_triggers += f"Site: {uri if uri else 'Default search'}, Triggers: {handler.get_triggers()}\n"
+for handler in default_search_resolver.handlers:
+    uri = handler.site_uri
+    search_triggers += f"Site: {uri if uri else 'Default search'}, Triggers: {handler.triggers}\n"
 
 help_message = rf'''
 GPT:

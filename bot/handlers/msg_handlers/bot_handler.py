@@ -7,7 +7,7 @@ from services.search_service import SearchService
 from services.liq_service import CsService, DotaService, GameInfo, LiquipediaService
 from services.tz_service import TzService
 from utils.md_utils import escape_markdown
-from utils.search_resolver import search_resolver
+from settings.base import default_search_resolver
 import dateutil
 import telebot, datetime
 import argparse
@@ -56,11 +56,11 @@ def bot_cmd_handler(message: telebot.types.Message):
     bot_reply = bot_instance.reply_to(message, "handling...")
     prompt = get_prompt(message.text)
 
-    search_handler = search_resolver.get_site_search_handler(prompt=prompt)
+    search_handler = default_search_resolver.get_site_search_handler(prompt=prompt)
     if search_handler:
         search_prompt = get_prompt(prompt)
         if search_prompt:
-            links = search_service.get_search_results(search_prompt, search_handler.get_site_uri())
+            links = search_service.get_search_results(search_prompt, search_handler.site_uri)
             response = search_handler.get_response(links)
             bot_instance.edit_message_text(response, message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2", disable_web_page_preview=True)
             return None
