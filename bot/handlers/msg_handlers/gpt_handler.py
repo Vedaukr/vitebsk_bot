@@ -1,6 +1,6 @@
 from bot.bot_instance.bot import bot_instance
 from bot.handlers.msg_handlers.shared import get_prompt
-from bot.handlers.shared import tg_exception_handler, continue_handling, msg_starts_with_filter, get_msg_text
+from bot.handlers.shared import tg_exception_handler, continue_handling, msg_starts_with_filter, get_msg_text, try_get_image
 from services.openai_service import OpenAiService
 import telebot
 import base64
@@ -102,17 +102,3 @@ def get_model_name(message: str) -> tuple[str, bool]:
     
     model_name, dist = find_closest_word(trigger, openai_service.get_available_models_info())
     return model_name, dist == 0
-
-def try_get_image(message: telebot.types.Message) -> tuple[str, str]:
-    if message.photo:
-        return get_photo_base64(message.photo[-1].file_id)
-    
-    if message.reply_to_message and message.reply_to_message.photo:
-        return get_photo_base64(message.reply_to_message.photo[-1].file_id)
-    
-    return (None, None)
-        
-def get_photo_base64(fileId: str) -> tuple[str, str]:
-    file_info = bot_instance.get_file(fileId)
-    img_bytes = bot_instance.download_file(file_info.file_path)
-    return base64.b64encode(img_bytes).decode('utf-8'), file_info.file_path.split('.')[-1]

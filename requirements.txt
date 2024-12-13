@@ -10,6 +10,7 @@ Werkzeug==2.2.2
 openai==0.28
 google==3.0.0
 python-Levenshtein==0.26.1
+anthropic==0.40.0
 numpy
 lxml
 python-dateutil

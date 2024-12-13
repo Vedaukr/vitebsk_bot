@@ -1,3 +1,4 @@
+import base64
 import telebot
 import logging
 import traceback
@@ -54,6 +55,20 @@ def get_msg_text(message: telebot.types.Message):
         return message.caption
     
     return ""
+
+def try_get_image(message: telebot.types.Message) -> tuple[str, str]:
+    if message.photo:
+        return get_photo_base64(message.photo[-1].file_id)
+    
+    if message.reply_to_message and message.reply_to_message.photo:
+        return get_photo_base64(message.reply_to_message.photo[-1].file_id)
+    
+    return (None, None)
+
+def get_photo_base64(fileId: str) -> tuple[str, str]:
+    file_info = bot_instance.get_file(fileId)
+    img_bytes = bot_instance.download_file(file_info.file_path)
+    return base64.b64encode(img_bytes).decode('utf-8'), file_info.file_path.split('.')[-1]
 
 def tg_exception_handler(func):
     logger = logging.getLogger(__name__)

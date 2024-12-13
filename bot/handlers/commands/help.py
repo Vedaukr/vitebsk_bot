@@ -26,6 +26,20 @@ Use /get_available_openai_models to see full list of models,
 you can try any from the list, no guarantee that it will work though:
 gpt-4o-realtime-preview [prompt]
 
+Claude:
+
+Default, uses haiku
+claude [prompt]
+
+Cheapest
+haiku [prompt] 
+
+Workable
+sonnet [prompt]
+
+Expensive as fuck
+opus [prompt]
+
 CS/Dota matches:
 
 bot cs [-today|-tournament|-team|-yt|-twitch] [prompt]
