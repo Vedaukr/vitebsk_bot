@@ -35,6 +35,7 @@ class OpenAiService(metaclass=Singleton):
     def generate_text(self, prompt, model_name="gpt-3.5-turbo", user_id="common", base64_image=None, img_ext="jpeg"):
         context = self.get_or_create_context(user_id)
         context_str = self.convert_context_to_str(context)
+        context.append(prompt)
 
         # i hate openai
         system_role = "system" if model_name.startswith("gpt") else "user"
@@ -85,8 +86,11 @@ class OpenAiService(metaclass=Singleton):
                 presence_penalty=self.params["presence_penalty"]
             )
 
-        context.append(prompt)
-        return response["choices"][0]["message"]["content"]
+        response_message = response["choices"][0]["message"]["content"]
+        if not response_message:
+            raise Exception(f"OpenAI returned empty str response for prompt: {prompt}, model: {model_name}.")
+        
+        return response_message
     
     def reset_defaults(self):
         self.params = copy.deepcopy(default_settings)
