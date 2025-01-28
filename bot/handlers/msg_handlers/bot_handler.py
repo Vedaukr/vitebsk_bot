@@ -1,13 +1,13 @@
 from typing import Any, Callable
 from bot.bot_instance.bot import bot_instance
 from bot.handlers.shared import tg_exception_handler
+from bot.handlers.configs.search_config import default_search_resolver
 from bot.handlers.msg_handlers.shared import get_prompt
 from services.owm_service import OwmService
 from services.search_service import SearchService
 from services.liq_service import CsService, DotaService, GameInfo, LiquipediaService
 from services.tz_service import TzService
 from utils.md_utils import escape_markdown
-from settings.base import default_search_resolver
 import dateutil
 import telebot, datetime
 import argparse
