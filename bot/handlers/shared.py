@@ -12,10 +12,13 @@ def create_message(sim_arr, chat_id):
     res = "I've found some similar memes:\n"
     for sim in sim_arr:
         dist = sim["dist"]
-        msgId = sim["msgId"]
+        msd_id = sim["msgId"]
         sim = get_similarity(dist) if dist else "Exact"
-        res += f"Link: https://t.me/c/{chat_id}/{msgId}, Similarity: {sim}\n"
+        res += f"Link: {get_tg_link(chat_id, msd_id)}, Similarity: {sim}\n"
     return res
+
+def get_tg_link(chat_id, msd_id) -> str:
+    return f"https://t.me/c/{chat_id}/{msd_id}"
 
 def get_similarity(dist):
     return str(round((64 - dist)/64, 2))

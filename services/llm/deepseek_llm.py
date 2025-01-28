@@ -12,17 +12,10 @@ class DeepseekLlm(LlmModel):
         super().__init__(model_name=model_name, is_vision_model=is_vision_model)
 
     @property
-    def company_name() -> str:
+    def company_name(self) -> str:
         return "Deepseek"
     
-    def generate_text(self, prompt:str, img:Optional[str]=None, img_ext:Optional[str]="jpeg") -> LlmResponse:
-        messages = [
-            {
-                "role": "user", 
-                "content": prompt
-            }
-        ]
-
+    def _make_llm_request(self, messages: list[dict]) -> LlmResponse:
         response = self.client.chat.completions.create(
             model=self.model_name,
             messages=messages,
@@ -30,12 +23,15 @@ class DeepseekLlm(LlmModel):
         )
 
         response_message = response.choices[0].message.content
-        if not response_message:
-            raise Exception(f"Deepseek service returned empty str response for prompt: {prompt}, model: {self.model_name}.")
-        
         reasoning_content = ""
         if hasattr(response.choices[0].message, 'reasoning_content'):
             reasoning_content = response.choices[0].message.reasoning_content
         
         metadata = LlmMetadata(total_tokens=response.usage.total_tokens, reasoning=reasoning_content)
         return LlmResponse(content=response_message, metadata=metadata)
+    
+    def _create_text_msg(self, role: str, content: str) -> dict:
+        return {
+            "role": role, 
+            "content": content
+        }
