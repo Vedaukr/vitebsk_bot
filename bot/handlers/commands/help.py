@@ -28,7 +28,7 @@ gpt-4o-realtime-preview [prompt]
 
 Claude:
 
-Default, uses haiku
+Default, uses sonnet
 claude [prompt]
 
 Cheapest
@@ -39,6 +39,18 @@ sonnet [prompt]
 
 Expensive as fuck
 opus [prompt]
+
+Deepseek:
+
+Deepseek-V3 (chat)
+ds [prompt]
+deepseek [prompt]
+
+Deepseek-R1 (reasoning)
+dsr [prompt]
+
+Does not have context
+Does not support image processing
 
 CS/Dota matches:
 

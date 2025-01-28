@@ -1,5 +1,6 @@
 from utils.singleton import Singleton
 from dataclasses import dataclass
+from openai import OpenAI
 import copy
 import openai
 import cachetools
@@ -25,12 +26,13 @@ class OpenAiService(metaclass=Singleton):
         # userId -> arr
         self.context = cachetools.TTLCache(maxsize=MAX_CACHE_SIZE, ttl=CACHE_TTL)
         self.params = copy.deepcopy(default_settings)
+        self.client = OpenAI(api_key=OPENAI_TOKEN, organization=OPENAI_ORGANIZATION)
     
     # Update models list once per 24 hours
     @cachetools.func.ttl_cache(ttl=60*60*24)
     def get_available_models_info(self) -> list['str']:
-        models = openai.Model.list(api_key=OPENAI_TOKEN)['data']
-        return [model['id'] for model in models]
+        models = self.client.models.list()
+        return [model.id for model in models]
 
     def generate_text(self, prompt, model_name="gpt-3.5-turbo", user_id="common", base64_image=None, img_ext="jpeg"):
         context = self.get_or_create_context(user_id)
@@ -71,13 +73,13 @@ class OpenAiService(metaclass=Singleton):
 
         # i hate openai fr 
         if model_name.startswith('o1'):
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model=model_name,
                 messages=messages,
                 max_completion_tokens=int(self.params["max_tokens"])
             )
         else:
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model=model_name,
                 messages=messages,
                 temperature=self.params["temperature"],
@@ -86,7 +88,7 @@ class OpenAiService(metaclass=Singleton):
                 presence_penalty=self.params["presence_penalty"]
             )
 
-        response_message = response["choices"][0]["message"]["content"]
+        response_message = response.choices[0].message.content
         if not response_message:
             raise Exception(f"OpenAI returned empty str response for prompt: {prompt}, model: {model_name}.")
         

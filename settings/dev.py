@@ -15,3 +15,5 @@ with open(f"{pathlib.Path.cwd()}\\api-tokens.json") as api_tokens_file:
     TARGET_CHAT_ID = api_tokens["TARGET_CHAT_ID"]
     OPENWEATHER_API_KEY = api_tokens["OPENWEATHER_API_KEY"]
     ANTHROPIC_API_KEY = api_tokens["ANTHROPIC_API_KEY"]
+    DEEPSEEK_API_KEY = api_tokens["DEEPSEEK_API_KEY"]
+    TELEGRAPH_TOKEN = api_tokens["TELEGRAPH_TOKEN"]
