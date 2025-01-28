@@ -1,12 +1,6 @@
 from utils.singleton import Singleton
 from openai import OpenAI
-import cachetools
-import cachetools.func
 from settings import DEEPSEEK_API_KEY
-
-CONTEXT_SIZE = 5
-MAX_CACHE_SIZE = 50
-CACHE_TTL = 30 * 60 # 30 minutes
 
 class DeepseekService(metaclass=Singleton):
     def __init__(self):

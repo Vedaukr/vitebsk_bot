@@ -1,7 +1,7 @@
 from bot.bot_instance.bot import bot_instance
 from bot.handlers.shared import tg_exception_handler
 import telebot
-from services.openai_service import OpenAiService
+from services.llm.openai_service import OpenAiService
 
 openai_service = OpenAiService()
 
