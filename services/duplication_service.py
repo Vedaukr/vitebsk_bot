@@ -14,11 +14,11 @@ class DuplicationService(metaclass=Singleton):
         self.add_to_map(media_info)
         if media_info.is_photo():
             images = self.db_accessor.get_images_by_chat_id(media_info.chat_id)
-            return self.dd.detect_image_duplicate(media_info.media_bytes, images)
+            return self.dd.detect_image_duplicate(media_info.media_hash, images)
 
         if media_info.is_video():
             videos = self.db_accessor.get_videos_by_chat_id(media_info.chat_id)
-            return self.dd.detect_video_duplicate(media_info.media_bytes, videos)
+            return self.dd.detect_video_duplicate(media_info.media_hash, videos)
 
     def add_to_map(self, media_info: MediaInfo):
         if not media_info.chat_id in self.media_map:

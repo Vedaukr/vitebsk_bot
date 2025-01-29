@@ -12,9 +12,8 @@ class DbService(metaclass=Singleton):
 
     def save_media_to_db(self, media_info: MediaInfo):
         if media_info.is_photo():
-            img_phash = str(self.dd.get_phash(media_info.media_bytes))
             image = Image(
-                phash=img_phash,
+                phash=media_info.media_hash,
                 msgId=media_info.msg_id,
                 chatId=media_info.chat_id,
                 authorId=media_info.author_id,
@@ -22,9 +21,8 @@ class DbService(metaclass=Singleton):
             self.db_accessor.add_image(image)
 
         if media_info.is_video():
-            vid_hash = str(self.dd.get_hash(media_info.media_bytes))
             video = Video(
-                hash=vid_hash,
+                hash=media_info.media_hash,
                 msgId=media_info.msg_id,
                 chatId=media_info.chat_id,
                 authorId=media_info.author_id,

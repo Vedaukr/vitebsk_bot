@@ -6,7 +6,7 @@ class MediaInfo:
     author_id: str
     chat_id: int
     media_type: str
-    media_bytes: bytearray
+    media_hash: str
     tags: str = ""
     recognised_text: str = ""
 
