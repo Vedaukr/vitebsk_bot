@@ -20,32 +20,49 @@ MAX_CTX_SIZE = 10
 logger = logging.getLogger(__name__)
 global_llm_context = LlmUserContext()
 
+@bot_instance.message_handler(func=lambda message: message.reply_to_message is not None, content_types=['text'])
+@tg_exception_handler
+def llm_reply_handler(message: telebot.types.Message):
+    user_id = str(message.from_user.id)
+    user_context = global_llm_context.get_user_context(user_id)
+    if user_context:
+        msgs = [msg for msg in user_context if msg.metadata.get('msg_id') is not None]
+        if str(message.reply_to_message.message_id) in [msg.metadata.get('msg_id') for msg in msgs]:
+            llm_msg = next(msg for msg in msgs[::-1] if msg.role == LlmMessageRole.LLM)
+            if model_name := llm_msg.metadata.get('model_name'):
+                handle_llm_call(message, model_name, prompt=get_msg_text(message))
+                return
+
+    return telebot.ContinueHandling()
+
 
 @bot_instance.message_handler(func=msg_starts_with_filter(tuple(default_model_mapping.keys())), content_types=['text', 'photo'])
 @tg_exception_handler
 @continue_handling
-def gpt_handler(message: telebot.types.Message):
-    user_id = str(message.from_user.id)
-    user_context = global_llm_context.get_user_context(user_id)
-
-    base64_image, img_ext = try_get_image(message)
+def llm_handler(message: telebot.types.Message):
     msg_text = get_msg_text(message)   
     prompt = get_prompt(msg_text)
-
     model_name = msg_text.split()[0].lower()
+    handle_llm_call(message, model_name, prompt)
+
+def handle_llm_call(message: telebot.types.Message, model_name: str, prompt: str):    
+    base64_image, img_ext = try_get_image(message)
+
     llm_model = default_model_mapping.get(model_name)
     if not llm_model:
         bot_instance.reply_to(message, f"Unrecognized model name {model_name}.")
         return 
 
     bot_reply = bot_instance.reply_to(message, "generating...") 
+    user_id = str(message.from_user.id)
+    user_context = global_llm_context.get_user_context(user_id)
     llm_response = llm_model.generate_text(prompt, user_context=user_context[-MAX_CTX_SIZE:], img=base64_image, img_ext=img_ext)
     output = llm_response.content
         
-    user_context.append(LlmMessage(role=LlmMessageRole.USER, type=LlmMessageType.TEXT, content=prompt, metadata={'msg_id': message.id}))
-    user_context.append(LlmMessage(role=LlmMessageRole.LLM, type=LlmMessageType.TEXT, content=output, metadata={'model_name': llm_model.model_name, 'msg_id': bot_reply.id}))
+    user_context.append(LlmMessage(role=LlmMessageRole.USER, type=LlmMessageType.TEXT, content=prompt, metadata={'msg_id': str(message.id)}))
+    user_context.append(LlmMessage(role=LlmMessageRole.LLM, type=LlmMessageType.TEXT, content=output, metadata={'model_name': model_name, 'msg_id': str(bot_reply.id)}))
     
-    llm_meta_appendix = get_llm_meta_appendix(llm_response)
+    llm_meta_appendix = get_llm_meta_appendix(llm_model.model_name, llm_response)
     
     try:
         formatted_output = f"{escape_markdown(output, entity_type='code')}{llm_meta_appendix}"
@@ -55,10 +72,11 @@ def gpt_handler(message: telebot.types.Message):
         formatted_output = f"{output}{llm_meta_appendix}"
         bot_instance.edit_message_text(output, message.chat.id, bot_reply.message_id)
 
-def get_llm_meta_appendix(llm_response: LlmResponse) -> str:
-    result = ""
+def get_llm_meta_appendix(model_name: str, llm_response: LlmResponse) -> str:
+    result = f"\n\n\-\-\-\n\[LLM meta\] Model used: {escape_markdown(model_name)}"
+
     if total_tokens := llm_response.metadata.get("total_tokens"):
-        result += f"\n\n\-\-\-\n\[LLM meta\] Token usage: {total_tokens}"
+        result += f"\n\[LLM meta\] Token usage: {total_tokens}"
     
     if reasoning := llm_response.metadata.get("reasoning"):
         telegraph_url = post_to_telegraph(reasoning)

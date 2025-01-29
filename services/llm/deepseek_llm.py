@@ -16,10 +16,15 @@ class DeepseekLlm(LlmModel):
         return "Deepseek"
     
     def _make_llm_request(self, messages: list[dict]) -> LlmResponse:
+        # TODO
+        # The system message of deepseek-reasoner must be put on the beginning of the message sequence 
+        if 'reasoner' in self.model_name:
+            messages = [messages[-1]]
+        
         response = self.client.chat.completions.create(
             model=self.model_name,
             messages=messages,
-            timeout=30
+            timeout=120
         )
 
         response_message = response.choices[0].message.content
