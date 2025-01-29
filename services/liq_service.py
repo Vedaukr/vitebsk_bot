@@ -1,7 +1,9 @@
 from datetime import datetime
 import functools
+import gc
 from typing import Any, Callable, Iterable, Optional
 from dataclasses import dataclass
+import cachetools
 from dateutil import parser
 from bs4 import BeautifulSoup, ResultSet
 from urllib.request import quote
@@ -16,6 +18,9 @@ import funcy as fy
 
 DATA_STREAM_ATTR = "data-stream-"
 MAX_GAMES = 10
+
+MAX_CACHE_SIZE = 10
+CACHE_TTL = 60*60 # 1 hour
 
 PRAGUE_TZ = pytz.timezone("Europe/Prague")
 KYIV_TZ = pytz.timezone("Europe/Kiev")
@@ -84,6 +89,7 @@ class GameInfo:
 class LiquipediaService:
     def __init__(self, appname, api_route):
         __metaclass__ = abc.ABCMeta
+        self.games_cache = cachetools.TTLCache(maxsize=MAX_CACHE_SIZE, ttl=CACHE_TTL)
         self.appname = appname
         self.__headers = {'User-Agent': appname, 'Accept-Encoding': 'gzip'}
         self.base_url = 'https://liquipedia.net'
@@ -134,55 +140,59 @@ class LiquipediaService:
             return soup,redirect_value
 
     def get_upcoming_and_ongoing_games(self, filters:list[Callable[[GameInfo], bool]]=None, max_games=MAX_GAMES, update_stream_links=True) -> list[GameInfo]:
-        games = []
-        matches = self._get_matches()
-        
-        if not matches:
-            logger.warning("No matches were found in liquepedia service.")
-        
-        for match in matches:
-            try:
-                game = {}
-
-                team_left = match.find(class_='team-left')
-                game['team1'] = team_left.get_text().strip()
-                tl_liq_link = team_left.find('a')
-                if tl_liq_link:
-                    game['team1_liqlink'] = f"{self.base_url}{tl_liq_link.get('href')}"
-
-                team_right = match.find(class_='team-right')
-                game['team2'] = team_right.get_text().strip()
-                tr_liq_link = team_right.find('a')
-                if tr_liq_link:
-                    game['team2_liqlink'] = f"{self.base_url}{tr_liq_link.get('href')}"	
-                
-                versus_block = match.find(class_='versus')
-                if versus_block:
-                    game['versus'] = versus_block.get_text().strip()
-                
-                match_details = 	match.find(class_=self.match_details_selector)
-                tournament_div = match_details.find(class_=self.tournament_selector)
-                game['tournament'] = tournament_div.get_text().strip()
-                game['tournament_link'] = f"{self.base_url}{tournament_div.find('a').get('href')}"
-
+        if not (games := self.games_cache.get(self.sport_name)):
+            games = []
+            matches = self._get_matches()
+            
+            if not matches:
+                logger.warning("No matches were found in liquipedia service.")
+            
+            for match in matches:
                 try:
-                    start_time_span = match_details.find(class_="timer-object")
-                    if start_time_span:
-                        data_timestamp = start_time_span.attrs.get('data-timestamp')
-                        if data_timestamp:
-                            game['start_time'] = datetime.fromtimestamp(int(data_timestamp))
-                        else:
-                            game['start_time'] = parser.parse(start_time_span.get_text(), tzinfos=TZ_MAPPING)
+                    game = {}
+
+                    team_left = match.find(class_='team-left')
+                    game['team1'] = team_left.get_text().strip()
+                    tl_liq_link = team_left.find('a')
+                    if tl_liq_link:
+                        game['team1_liqlink'] = f"{self.base_url}{tl_liq_link.get('href')}"
+
+                    team_right = match.find(class_='team-right')
+                    game['team2'] = team_right.get_text().strip()
+                    tr_liq_link = team_right.find('a')
+                    if tr_liq_link:
+                        game['team2_liqlink'] = f"{self.base_url}{tr_liq_link.get('href')}"	
+                    
+                    versus_block = match.find(class_='versus')
+                    if versus_block:
+                        game['versus'] = versus_block.get_text().strip()
+                    
+                    match_details = 	match.find(class_=self.match_details_selector)
+                    tournament_div = match_details.find(class_=self.tournament_selector)
+                    game['tournament'] = tournament_div.get_text().strip()
+                    game['tournament_link'] = f"{self.base_url}{tournament_div.find('a').get('href')}"
+
+                    try:
+                        start_time_span = match_details.find(class_="timer-object")
+                        if start_time_span:
+                            data_timestamp = start_time_span.attrs.get('data-timestamp')
+                            if data_timestamp:
+                                game['start_time'] = datetime.fromtimestamp(int(data_timestamp))
+                            else:
+                                game['start_time'] = parser.parse(start_time_span.get_text(), tzinfos=TZ_MAPPING)
+                    except AttributeError as atr_ex:
+                        logger.error(f"Attribute error in LiquipediaService: {atr_ex}")
+                    
+                    game['stream_links'] = self.get_stream_links(match_details)
+                    game_info = GameInfo(**game)
+                    games.append(game_info)	
+                
                 except AttributeError as atr_ex:
                     logger.error(f"Attribute error in LiquipediaService: {atr_ex}")
-                
-                game['stream_links'] = self.get_stream_links(match_details)
-                game_info = GameInfo(**game)
-                games.append(game_info)	
-            
-            except AttributeError as atr_ex:
-                logger.error(f"Attribute error in LiquipediaService: {atr_ex}")
-        
+
+            if games:
+                self.games_cache[self.sport_name] = games
+
         games = filter_unique(games, lambda game: (game.team1, game.team2))
         if filters:
             games = list(fy.filter(fy.all_fn(*filters), games))

@@ -4,7 +4,11 @@ import os
 BASE_DIR = "/app/data"
 SQLALCHEMY_DATABASE_URI =  f'sqlite:///{os.path.join(BASE_DIR, DB_NAME)}'
 BOT_TOKEN = os.environ["BOT_TOKEN"] 
-LOGS_PATH =  os.path.join(BASE_DIR, "logs", LOGS_FILENAME)
+LOGS_PATH = os.path.join(BASE_DIR, "logs", LOGS_FILENAME)
+
+PERSISTENT_CACHE_PATH = os.path.join(BASE_DIR, "ctx_cache")
+if not os.path.exists(PERSISTENT_CACHE_PATH):
+    os.mkdir(PERSISTENT_CACHE_PATH)
 
 OPENAI_TOKEN = os.environ["OPENAI_TOKEN"] 
 STABILITYAI_TOKEN = os.environ["STABILITYAI_TOKEN"] 

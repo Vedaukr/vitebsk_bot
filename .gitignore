@@ -175,3 +175,6 @@ logs/
 
 # backup
 backup/
+
+# context cache
+ctx_cache/

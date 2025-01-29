@@ -5,6 +5,7 @@ import pathlib
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 SQLALCHEMY_DATABASE_URI =  f'sqlite:///{os.path.join(BASE_DIR, "..", "database", DB_NAME)}'
 LOGS_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "logs", LOGS_FILENAME))
+PERSISTENT_CACHE_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", "ctx_cache"))
 
 with open(f"{pathlib.Path.cwd()}\\api-tokens.json") as api_tokens_file:
     api_tokens = json.load(api_tokens_file)
