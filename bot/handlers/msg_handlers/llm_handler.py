@@ -70,7 +70,7 @@ def handle_llm_call(message: telebot.types.Message, model_name: str, prompt: str
     except Exception as ex:
         logger.error(f"Markdown error: {ex}.\nMessage in question:\n{output}")
         formatted_output = f"{output}{llm_meta_appendix}"
-        bot_instance.edit_message_text(output, message.chat.id, bot_reply.message_id)
+        bot_instance.edit_message_text(formatted_output, message.chat.id, bot_reply.message_id)
 
 def get_llm_meta_appendix(model_name: str, llm_response: LlmResponse) -> str:
     result = f"\n\n\-\-\-\n\[LLM meta\] Model used: {escape_markdown(model_name)}"
