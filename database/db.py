@@ -1,3 +1,4 @@
+from typing import Iterable
 from database.models import Image, Video, DementiaRating
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -33,10 +34,11 @@ class DbAccessor(metaclass=Singleton):
             res = list(session.scalars(stmt))
             session.commit()
             
-    def get_images_by_chat_id(self, chatId):
+    def get_images_by_chat_id(self, chatId) -> Iterable[Image]:
         with Session(self.engine) as session:
-            stmt = select(Image).where(Image.chatId.in_([chatId]))
-            return list(session.scalars(stmt))
+            stmt = select(Image).where(Image.chatId.in_([chatId])).execution_options(stream_results=True)
+            for image in session.scalars(stmt).yield_per(100):
+                yield image
 
     def get_videos_by_chat_id(self, chatId):
         with Session(self.engine) as session:

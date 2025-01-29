@@ -4,6 +4,8 @@ from flask import Flask, request
 from settings import BOT_NAME
 import logging
 
+from settings.base import AUTH_CHAT_ID
+
 
 host = os.environ["BOT_HOST"]
 server = Flask(__name__)
@@ -21,5 +23,10 @@ def getMessage():
     bot_instance.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "!", 200
 
+def check_if_restarted_by_oom() -> bool:
+    return os.environ.get('LAST_EXIT_CODE') == '137'
+
 if __name__ == "__main__":
+    start_message = "Bot restarted on OOM." if check_if_restarted_by_oom() else "Bot restarted."
+    bot_instance.send_message(AUTH_CHAT_ID, f"[DEBUG] {start_message}")
     server.run(host="0.0.0.0", port=8080)

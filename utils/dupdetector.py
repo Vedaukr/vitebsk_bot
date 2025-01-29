@@ -6,7 +6,7 @@ import imagehash
 
 class DupDetector:
 
-    def __init__(self, threshold=10) -> None:
+    def __init__(self, threshold=5) -> None:
         self.threshold = threshold
 
     def detect_image_duplicate(self, image, images, dup_number=7):
