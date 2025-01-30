@@ -1,9 +1,11 @@
 import abc
+import logging
 from typing import Optional
 
 from services.llm.models.llm_message import LlmMessage, LlmMessageRole
 from services.llm.models.llm_reponse import LlmResponse
 
+logger = logging.getLogger(__name__)
 
 class LlmModel(abc.ABC):
     def __init__(self, model_name: str, is_vision_model: bool, system_role: str = "system", user_role: str = "user"):
@@ -35,7 +37,8 @@ class LlmModel(abc.ABC):
 
         response = self._make_llm_request(messages=messages)
         if not response.content:
-            raise Exception(f"{self.company_name} returned empty str response for prompt: {prompt}, model: {self.model_name}.")
+            logger.warning(f"{self.company_name} returned empty str response for prompt: {prompt}, model: {self.model_name}.")
+            raise Exception(f"{self.company_name} returned empty str response. Model: {self.model_name}.")
         
         return response
 
