@@ -12,6 +12,7 @@ default_model_mapping["gpt4"] = OpenAiLlm(model_name="gpt-4o")
 default_model_mapping["гпт4"] = OpenAiLlm(model_name="gpt-4o") 
 default_model_mapping["o1"] = OpenAiO1Llm(model_name="o1-mini") 
 default_model_mapping["o1p"] = OpenAiO1Llm(model_name="o1-preview")
+default_model_mapping["o3"] = OpenAiO1Llm(model_name="o3-mini") 
 
 # anthropic
 default_model_mapping["anth"] = AnthropicLlm(model_name="claude-3-5-sonnet-latest") 
