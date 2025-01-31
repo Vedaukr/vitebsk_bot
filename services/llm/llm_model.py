@@ -32,8 +32,7 @@ class LlmModel(abc.ABC):
         messages.append(self._create_text_msg(self.user_role, prompt))
         
         if img and self.is_vision_model:
-            # TODO make this shit less hardcoded
-            messages[-1]["content"].append(self._create_img_msg(img, img_ext))
+            messages.append(self._create_img_msg(self.user_role, img, img_ext))
 
         response = self._make_llm_request(messages=messages)
         if not response.content:
@@ -61,11 +60,16 @@ class LlmModel(abc.ABC):
             ]
         }
     
-    def _create_img_msg(self, img: Optional[str]=None, img_ext: Optional[str]="jpeg") -> dict:
+    def _create_img_msg(self, role: str, img: Optional[str]=None, img_ext: Optional[str]="jpeg") -> dict:
         return {
-            "type": "image_url",
-            "image_url": {
-                "url": f"data:image/{img_ext};base64,{img}",
-                "detail": "low"
-            }
+            "role": role, 
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/{img_ext};base64,{img}",
+                        "detail": "low"
+                    }
+                }
+            ]
         }

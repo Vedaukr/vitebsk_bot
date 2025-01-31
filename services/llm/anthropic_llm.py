@@ -34,17 +34,22 @@ class AnthropicLlm(LlmModel):
         metadata = LlmMetadata(total_tokens=total_tokens)
         return LlmResponse(content=response_message, metadata=metadata)
     
-    def _create_img_msg(self, img: Optional[str]=None, img_ext: Optional[str]="jpeg") -> dict:
+    def _create_img_msg(self, role: str, img: Optional[str]=None, img_ext: Optional[str]="jpeg") -> dict:
         
         if img_ext == 'jpg':
             img_ext = 'jpeg'
         
         return {
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "media_type": f"image/{img_ext}",
-                "data": img
-            }
+            "role": role, 
+            "content": [
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": f"image/{img_ext}",
+                        "data": img
+                    }
+                }
+            ]
         }
     
