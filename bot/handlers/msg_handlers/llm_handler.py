@@ -2,6 +2,7 @@ import json
 
 import requests
 from bot.bot_instance.bot import bot_instance
+from bot.bot_instance.telebot_extention import send_message_in_reply_chain
 from bot.handlers.msg_handlers.shared import get_prompt
 from bot.handlers.configs.llm_config import default_model_mapping
 from bot.handlers.shared import tg_exception_handler, continue_handling, msg_starts_with_filter, get_msg_text, try_get_image
@@ -68,11 +69,13 @@ def handle_llm_call(message: telebot.types.Message, model_name: str, prompt: str
     
     try:
         formatted_output = f"{escape_markdown(output, entity_type='code')}{llm_meta_appendix}"
-        bot_instance.edit_message_text(formatted_output, message.chat.id, bot_reply.message_id, parse_mode="MarkdownV2")
+        send_message_in_reply_chain(bot_instance, message.chat.id, formatted_output, message, parse_mode="MarkdownV2")
     except Exception as ex:
         logger.error(f"Markdown error: {ex}.\nMessage in question:\n{output}")
         formatted_output = f"{output}{llm_meta_appendix}"
-        bot_instance.edit_message_text(formatted_output, message.chat.id, bot_reply.message_id)
+        send_message_in_reply_chain(bot_instance, formatted_output, message, parse_mode="MarkdownV2")
+    finally:
+        bot_instance.delete_message(message.chat.id, bot_reply.message_id)
 
 def get_llm_meta_appendix(model_name: str, llm_response: LlmResponse) -> str:
     result = f"\n\n\nLLM meta\nModel used: {escape_markdown(model_name)}"
@@ -86,6 +89,7 @@ def get_llm_meta_appendix(model_name: str, llm_response: LlmResponse) -> str:
 
     return result
 
+# todo make separate service
 def post_to_telegraph(reasoning: str) -> str:
     content = [
         {

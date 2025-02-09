@@ -13,7 +13,7 @@ class PersistentTTLCache(TTLCache):
         filename: str,
         timer=time.monotonic,
         getsizeof=None,
-        save_interval=20  # seconds
+        save_interval=60  # seconds
     ):
         super().__init__(maxsize, ttl, timer=timer, getsizeof=getsizeof)
         self.filename = filename

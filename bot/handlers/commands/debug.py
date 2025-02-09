@@ -31,13 +31,14 @@ def handle_image_count(message: telebot.types.Message):
     test = bot_instance.send_message(message.chat.id, test_msg)
 
 
+test1 = """
+```python
+test = 2
+```
+
+"""
 
 @bot_instance.message_handler(commands=['test_markdown'])
 @tg_exception_handler
 def handle_image_count(message: telebot.types.Message):
-    md = """
-    Text\n
-    More text\n
-    [Duck Duck Go](https://duckduckgo.com)
-    """
-    bot_instance.send_message(message.chat.id, md, parse_mode="MarkdownV2")
+    bot_instance.send_message(message.chat.id, test1, parse_mode="MarkdownV2")
