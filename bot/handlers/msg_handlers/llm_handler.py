@@ -54,28 +54,26 @@ def handle_llm_call(message: telebot.types.Message, model_name: str, prompt: str
         bot_instance.reply_to(message, f"Unrecognized model name {model_name}.")
         return 
 
-    bot_reply = bot_instance.reply_to(message, "generating...") 
+    initial_bot_reply = bot_instance.reply_to(message, "generating...") 
     user_id = str(message.from_user.id)
     user_context = global_llm_context.get_user_context(user_id)
     llm_response = llm_model.generate_text(prompt, user_context=user_context[-MAX_CTX_SIZE:], img=base64_image, img_ext=img_ext)
-    output = llm_response.content
-        
-    user_context.append(LlmMessage(role=LlmMessageRole.USER, type=LlmMessageType.TEXT, content=prompt, metadata={'msg_id': str(message.id)}))
-    user_context.append(LlmMessage(role=LlmMessageRole.LLM, type=LlmMessageType.TEXT, content=output, metadata={'model_name': model_name, 'msg_id': str(bot_reply.id)}))
     
-    global_llm_context.update_user_context(user_id, user_context)
-
+    output = llm_response.content
     llm_meta_appendix = get_llm_meta_appendix(llm_model.model_name, llm_response)
     
     try:
         formatted_output = f"{escape_markdown(output, entity_type='code')}{llm_meta_appendix}"
-        send_message_in_reply_chain(bot_instance, message.chat.id, formatted_output, message, parse_mode="MarkdownV2")
+        bot_reply = send_message_in_reply_chain(bot_instance, message.chat.id, formatted_output, message, parse_mode="MarkdownV2")
     except Exception as ex:
         logger.error(f"Markdown error: {ex}.\nMessage in question:\n{output}")
         formatted_output = f"{output}{llm_meta_appendix}"
-        send_message_in_reply_chain(bot_instance, formatted_output, message, parse_mode="MarkdownV2")
+        bot_reply = send_message_in_reply_chain(bot_instance, formatted_output, message)
     finally:
-        bot_instance.delete_message(message.chat.id, bot_reply.message_id)
+        bot_instance.delete_message(message.chat.id, initial_bot_reply.message_id)
+        user_context.append(LlmMessage(role=LlmMessageRole.USER, type=LlmMessageType.TEXT, content=prompt, metadata={'msg_id': str(message.id)}))
+        user_context.append(LlmMessage(role=LlmMessageRole.LLM, type=LlmMessageType.TEXT, content=output, metadata={'model_name': model_name, 'msg_id': str(bot_reply.id)}))
+        global_llm_context.update_user_context(user_id, user_context)
 
 def get_llm_meta_appendix(model_name: str, llm_response: LlmResponse) -> str:
     result = f"\n\n\nLLM meta\nModel used: {escape_markdown(model_name)}"
