@@ -3,7 +3,9 @@ import pytz
 from bot.bot_instance.bot import bot_instance
 from services.liq_service import CsService, DotaService, GameInfo
 from scheduler.bot_scheduler import scheduler_instance
-from settings import TARGET_CHAT_ID
+from settings import settings
+
+TARGET_CHAT_ID = settings["TARGET_CHAT_ID"]
 
 HOUR = 60*60
 TEAM_NAMES = ["navi", "natus vincere", "passion ua", "b8"]

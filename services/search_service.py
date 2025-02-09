@@ -1,8 +1,10 @@
 from utils.singleton import Singleton
-from settings import BING_SUBSCRIPTION_KEY
+from settings import settings
 import requests
 import numpy as np
 from googlesearch import search
+
+BING_SUBSCRIPTION_KEY = settings.get('BING_SUBSCRIPTION_KEY', '')
 
 class SearchService(metaclass=Singleton):
     def __init__(self):

@@ -1,6 +1,6 @@
 from services.llm.deepseek_llm import DeepseekLlm
 from services.llm.llm_model import LlmModel
-from services.llm.openai_llm import OpenAiLlm, OpenAiO1Llm
+from services.llm.openai_llm import OpenAiLlm, OpenAiOSeriesLlm
 from services.llm.anthropic_llm import AnthropicLlm
 
 default_model_mapping: dict[str, LlmModel] = {}
@@ -11,9 +11,10 @@ default_model_mapping["gpt"] = OpenAiLlm(model_name="gpt-4o")
 default_model_mapping["гпт"] = OpenAiLlm(model_name="gpt-4o") 
 default_model_mapping["gpt4"] = OpenAiLlm(model_name="gpt-4o") 
 default_model_mapping["гпт4"] = OpenAiLlm(model_name="gpt-4o") 
-default_model_mapping["o1"] = OpenAiO1Llm(model_name="o1-mini") 
-default_model_mapping["o1p"] = OpenAiO1Llm(model_name="o1-preview")
-default_model_mapping["o3"] = OpenAiO1Llm(model_name="o3-mini") 
+
+default_model_mapping["o1"] = OpenAiOSeriesLlm(model_name="o1-mini") 
+default_model_mapping["o1p"] = OpenAiOSeriesLlm(model_name="o1-preview")
+default_model_mapping["o3"] = OpenAiOSeriesLlm(model_name="o3-mini")
 
 # anthropic
 default_model_mapping["anth"] = AnthropicLlm(model_name="claude-3-5-sonnet-latest") 

@@ -1,13 +1,13 @@
 import telebot, os
 from import_bot import bot_instance
 from flask import Flask, request
-from settings import BOT_NAME
+from settings import settings
 import logging
 
-from settings.base import AUTH_CHAT_ID
+BOT_NAME = settings.get('BOT_NAME', 'bot')
+AUTH_CHAT_ID = settings.get('AUTH_CHAT_ID', None)
 
-
-host = os.environ["BOT_HOST"]
+host = settings.get('BOT_HOST')
 server = Flask(__name__)
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,10 @@
 from services.llm.llm_model import LlmModel
 from services.llm.models.llm_reponse import LlmMetadata, LlmResponse
 from openai import ChatCompletion, OpenAI
-from settings import OPENAI_ORGANIZATION, OPENAI_TOKEN
+from settings import settings
+
+OPENAI_TOKEN = settings['OPENAI_TOKEN']
+OPENAI_ORGANIZATION = settings['OPENAI_ORGANIZATION']
 
 default_settings = {
     "max_tokens": 4000,
@@ -36,7 +39,8 @@ class OpenAiLlm(LlmModel):
             presence_penalty=default_settings["presence_penalty"]
         )
     
-class OpenAiO1Llm(OpenAiLlm):
+# Openai O-series
+class OpenAiOSeriesLlm(OpenAiLlm):
 
     def __init__(self, model_name: str):
         super().__init__(model_name, is_vision_model=False, system_role="user")
@@ -44,6 +48,7 @@ class OpenAiO1Llm(OpenAiLlm):
     def _make_request(self, messages) -> ChatCompletion:
         return self.client.chat.completions.create(
             model=self.model_name,
+            reasoning_effort="high",
             messages=messages,
             max_completion_tokens=int(default_settings["max_tokens"])
         )

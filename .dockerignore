@@ -8,4 +8,5 @@
 !/scheduler
 !*.py
 !requirements.txt
+!settings.json
 **/__pycache__/

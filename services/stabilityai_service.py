@@ -1,10 +1,11 @@
 from utils.singleton import Singleton
 from dataclasses import dataclass
-from settings import STABILITYAI_TOKEN
+from settings import settings
 import requests
 import base64
 
 CONTENT_FILTERED = "CONTENT_FILTERED"
+STABILITYAI_TOKEN = settings['STABILITYAI_TOKEN']
 
 class StabilityAiService(metaclass=Singleton):
     def __init__(self):

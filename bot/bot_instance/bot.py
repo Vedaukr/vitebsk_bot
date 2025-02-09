@@ -1,8 +1,8 @@
 from .telebot_extention import TelebotExt
-from settings import BOT_TOKEN
+from settings import settings
 import telebot
 
-bot_instance = TelebotExt(token=BOT_TOKEN, parse_mode=None)
+bot_instance = TelebotExt(token=settings['BOT_TOKEN'], parse_mode=None)
 
 bot_instance.set_my_commands([
     telebot.types.BotCommand("/clear_llm_context", "Clear LLM context"),

@@ -30,3 +30,14 @@ def handle_image_count(message: telebot.types.Message):
     test_msg =f"{'0'*1000}\n{'1'*1000}\n{'2'*1000}\n{'3'*1000}\n{'4'*1000}\n{'5'*1000}\n{'6'*1000}\n{'7'*1000}\n{'8'*1000}\n{'9'*1000}\n"
     test = bot_instance.send_message(message.chat.id, test_msg)
 
+
+
+@bot_instance.message_handler(commands=['test_markdown'])
+@tg_exception_handler
+def handle_image_count(message: telebot.types.Message):
+    md = """
+    Text\n
+    More text\n
+    [Duck Duck Go](https://duckduckgo.com)
+    """
+    bot_instance.send_message(message.chat.id, md, parse_mode="MarkdownV2")

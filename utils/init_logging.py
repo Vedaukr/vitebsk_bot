@@ -3,7 +3,8 @@ import logging.config
 import os
 from logging.handlers import TimedRotatingFileHandler
 
-from settings import LOGS_PATH
+from settings import settings
+LOGS_PATH = settings.get('LOGS_PATH', './logs/app.log')
 
 def setup_logging():
     logger = logging.getLogger()

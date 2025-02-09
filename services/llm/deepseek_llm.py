@@ -2,7 +2,9 @@ from typing import Optional
 from services.llm.llm_model import LlmModel
 from openai import OpenAI
 from services.llm.models.llm_reponse import LlmMetadata, LlmResponse
-from settings import DEEPSEEK_API_KEY
+from settings import settings
+
+DEEPSEEK_API_KEY = settings['DEEPSEEK_API_KEY']
 
 class DeepseekLlm(LlmModel):
 

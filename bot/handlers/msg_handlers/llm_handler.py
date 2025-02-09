@@ -11,7 +11,7 @@ import logging
 from services.llm.llm_user_context import LlmUserContext
 from services.llm.models.llm_message import LlmMessage, LlmMessageRole, LlmMessageType
 from services.llm.models.llm_reponse import LlmResponse
-from settings import TELEGRAPH_TOKEN
+from settings import settings
 from utils.md_utils import escape_markdown, get_md_link   
 
 MAX_CTX_SIZE = 10
@@ -62,6 +62,8 @@ def handle_llm_call(message: telebot.types.Message, model_name: str, prompt: str
     user_context.append(LlmMessage(role=LlmMessageRole.USER, type=LlmMessageType.TEXT, content=prompt, metadata={'msg_id': str(message.id)}))
     user_context.append(LlmMessage(role=LlmMessageRole.LLM, type=LlmMessageType.TEXT, content=output, metadata={'model_name': model_name, 'msg_id': str(bot_reply.id)}))
     
+    global_llm_context.update_user_context(user_id, user_context)
+
     llm_meta_appendix = get_llm_meta_appendix(llm_model.model_name, llm_response)
     
     try:
@@ -73,14 +75,14 @@ def handle_llm_call(message: telebot.types.Message, model_name: str, prompt: str
         bot_instance.edit_message_text(formatted_output, message.chat.id, bot_reply.message_id)
 
 def get_llm_meta_appendix(model_name: str, llm_response: LlmResponse) -> str:
-    result = f"\n\n\-\-\-\n\[LLM meta\] Model used: {escape_markdown(model_name)}"
+    result = f"\n\n\nLLM meta\nModel used: {escape_markdown(model_name)}"
 
     if total_tokens := llm_response.metadata.get("total_tokens"):
-        result += f"\n\[LLM meta\] Token usage: {total_tokens}"
+        result += f"\nToken usage: {total_tokens}"
     
     if reasoning := llm_response.metadata.get("reasoning"):
         telegraph_url = post_to_telegraph(reasoning)
-        result += f"\n\[LLM meta\] {get_md_link('Reasoning', telegraph_url)}" if telegraph_url else "\n\nUnable to create telegraph article, see logs."
+        result += f"\n{get_md_link('Reasoning', telegraph_url)}" if telegraph_url else "\n\nUnable to create telegraph article, see logs."
 
     return result
 
@@ -97,7 +99,7 @@ def post_to_telegraph(reasoning: str) -> str:
         page_response = requests.post(
             'https://api.telegra.ph/createPage',
             data={
-                'access_token': TELEGRAPH_TOKEN,
+                'access_token': settings['TELEGRAPH_TOKEN'],
                 'title': f'DS-REASONING-{reasoning[:15]}',
                 'content': json.dumps(content, ensure_ascii=False),
                 'author_name': "DS-vbot"

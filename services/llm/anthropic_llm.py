@@ -4,7 +4,9 @@ from services.llm.llm_model import LlmModel
 from services.llm.models.llm_reponse import LlmMetadata, LlmResponse
 import anthropic
 
-from settings import ANTHROPIC_API_KEY
+from settings import settings
+
+ANTHROPIC_API_KEY = settings['ANTHROPIC_API_KEY']
 
 default_settings = {
     "max_tokens": 4000,

@@ -1,7 +1,9 @@
 from utils.singleton import Singleton
 from pyowm.owm import OWM
-from settings import OPENWEATHER_API_KEY
+from settings import settings
 from pyowm.weatherapi25 import forecaster, observation
+
+OPENWEATHER_API_KEY = settings['OPENWEATHER_API_KEY']
 
 class OwmService(metaclass=Singleton):
     def __init__(self):

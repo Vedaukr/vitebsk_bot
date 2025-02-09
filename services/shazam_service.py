@@ -1,8 +1,10 @@
 import base64
 from utils.singleton import Singleton
-from settings import RAPID_API_SUBSCRIPTION_KEY
+from settings import settings
 from dataclasses import dataclass
 import requests, json
+
+RAPID_API_SUBSCRIPTION_KEY = settings['RAPID_API_SUBSCRIPTION_KEY']
 
 @dataclass
 class ShazamResult:

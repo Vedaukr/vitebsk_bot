@@ -1,0 +1,17 @@
+{
+    "default": {
+        "LOGS_PATH": "./logs/vbot.log",
+        "DB_PATH": "./database/app.db",
+        "BOT_NAME": "vitebsk_bot",
+        "PERSISTENT_CACHE_PATH": "./ctx_cache",
+        "SQLALCHEMY_TRACK_MODIFICATIONS": true
+    },
+    "fly": {
+        "DB_PATH": "/app/data/app.db",
+        "LOGS_PATH": "/app/data/logs/vbot.log"
+    },
+    "northflank": {
+        "DB_PATH": "app.db",
+        "LOGS_PATH": "/logs/vbot.log"
+    }
+}
