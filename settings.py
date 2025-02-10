@@ -10,5 +10,4 @@ settings = Dynaconf(
     settings_files=['settings.json', '.env']
 )
 
-DB_PATH = settings['DB_PATH']
-SQLALCHEMY_DATABASE_URI =  f'sqlite:///{DB_PATH}'
+SQLALCHEMY_DATABASE_URI =  settings['SQLALCHEMY_DATABASE_URI']

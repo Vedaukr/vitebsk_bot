@@ -178,3 +178,6 @@ backup/
 
 # context cache
 ctx_cache/
+
+# alembic migrations settings
+alembic.ini
