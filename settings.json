@@ -11,7 +11,8 @@
         "LOGS_PATH": "/app/data/logs/vbot.log"
     },
     "northflank": {
-        "DB_PATH": "/db/app.db",
-        "LOGS_PATH": "/logs/vbot.log"
+        "DB_PATH": "/data/app.db",
+        "LOGS_PATH": "/data/logs/vbot.log",
+        "PERSISTENT_CACHE_PATH": "/data/ctx_cache"
     }
 }

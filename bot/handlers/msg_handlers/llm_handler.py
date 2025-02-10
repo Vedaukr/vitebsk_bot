@@ -68,7 +68,7 @@ def handle_llm_call(message: telebot.types.Message, model_name: str, prompt: str
     except Exception as ex:
         logger.error(f"Markdown error: {ex}.\nMessage in question:\n{output}")
         formatted_output = f"{output}{llm_meta_appendix}"
-        bot_reply = send_message_in_reply_chain(bot_instance, formatted_output, message)
+        bot_reply = send_message_in_reply_chain(bot_instance, message.chat.id, formatted_output, message)
     finally:
         bot_instance.delete_message(message.chat.id, initial_bot_reply.message_id)
         user_context.append(LlmMessage(role=LlmMessageRole.USER, type=LlmMessageType.TEXT, content=prompt, metadata={'msg_id': str(message.id)}))
