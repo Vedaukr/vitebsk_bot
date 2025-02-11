@@ -5,6 +5,7 @@ from bot.handlers.shared import get_tg_link, normalize_tg_chat_id, tg_exception_
 from services.llm.llm_user_context import LlmUserContext
 from services.llm.models.llm_message import LlmMessageRole, LlmMessageType
 from utils.md_utils import escape_markdown, get_md_link
+from utils.string_utils import remove_linebreaks
 
 global_llm_context = LlmUserContext()
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ def get_ctx_handler(message: telebot.types.Message):
             msg_id = msg.metadata.get("msg_id")
             chat_id = normalize_tg_chat_id(message.chat.id)
             msg_link = get_md_link('link', get_tg_link(chat_id, msg_id)) if msg_id else ""
-            bot_response += f"\n{escape_markdown(msg.content[:20])} \.\.\. \| {msg_link} \| {escape_markdown(role)}"
+            bot_response += f"\n{escape_markdown(remove_linebreaks(msg.content[:20]))} \.\.\. \| {msg_link} \| {escape_markdown(role)}"
 
     try:
         bot_instance.reply_to(message, bot_response, parse_mode="MarkdownV2")

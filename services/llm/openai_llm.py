@@ -1,6 +1,7 @@
+from typing import Optional
 from services.llm.llm_model import LlmModel
 from services.llm.models.llm_reponse import LlmMetadata, LlmResponse
-from openai import ChatCompletion, OpenAI
+from openai import NOT_GIVEN, ChatCompletion, OpenAI
 from settings import settings
 
 OPENAI_TOKEN = settings['OPENAI_TOKEN']
@@ -42,13 +43,19 @@ class OpenAiLlm(LlmModel):
 # Openai O-series
 class OpenAiOSeriesLlm(OpenAiLlm):
 
-    def __init__(self, model_name: str):
+    def __init__(self, model_name: str, reasoning_effort: Optional[str] = None):
+        
+        # o1-mini/o1-preview models doesn't support reasoning_effort
+        # but passing None doesn't work since None and NOT_GIVEN are *different* for openai
+        # I hate openai API
+        self.reasoning_effort = reasoning_effort or NOT_GIVEN
+        
         super().__init__(model_name, is_vision_model=False, system_role="user")
     
     def _make_request(self, messages) -> ChatCompletion:
         return self.client.chat.completions.create(
             model=self.model_name,
-            reasoning_effort="high",
+            reasoning_effort=self.reasoning_effort,
             messages=messages,
             max_completion_tokens=int(default_settings["max_tokens"])
         )
