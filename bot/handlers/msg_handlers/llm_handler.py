@@ -13,7 +13,8 @@ from services.llm.llm_user_context import LlmUserContext
 from services.llm.models.llm_message import LlmMessage, LlmMessageRole, LlmMessageType
 from services.llm.models.llm_reponse import LlmResponse
 from settings import settings
-from utils.md_utils import escape_markdown, get_md_link   
+from utils.md_utils import escape_markdown, get_md_link
+from utils.string_utils import StringBuilder   
 
 MAX_CTX_SIZE = 10
 
@@ -63,12 +64,25 @@ def handle_llm_call(message: telebot.types.Message, model_name: str, prompt: str
     llm_meta_appendix = get_llm_meta_appendix(llm_model.model_name, llm_response)
     
     try:
-        formatted_output = f"{escape_markdown(output, entity_type='code')}{llm_meta_appendix}"
+        (formatted_output := StringBuilder()
+            .append(escape_markdown(output, entity_type='code'))
+            .append_linebreaks(3)
+            .append(llm_meta_appendix)
+            .build())
+        
         bot_reply = send_message_in_reply_chain(bot_instance, message.chat.id, formatted_output, message, parse_mode="MarkdownV2")
+    
     except Exception as ex:
         logger.error(f"Markdown error: {ex}.\nMessage in question:\n{output}")
-        formatted_output = f"{output}{llm_meta_appendix}"
+        
+        (formatted_output := StringBuilder()
+            .append(output)
+            .append_linebreaks(3)
+            .append(llm_meta_appendix)
+            .build())
+        
         bot_reply = send_message_in_reply_chain(bot_instance, message.chat.id, formatted_output, message)
+    
     finally:
         bot_instance.delete_message(message.chat.id, initial_bot_reply.message_id)
         user_context.append(LlmMessage(role=LlmMessageRole.USER, type=LlmMessageType.TEXT, content=prompt, metadata={'msg_id': str(message.id)}))
@@ -76,16 +90,19 @@ def handle_llm_call(message: telebot.types.Message, model_name: str, prompt: str
         global_llm_context.update_user_context(user_id, user_context)
 
 def get_llm_meta_appendix(model_name: str, llm_response: LlmResponse) -> str:
-    result = f"\n\n\nLLM meta\nModel used: {escape_markdown(model_name)}"
+    (llm_meta_builder := StringBuilder()
+            .append_line("LLM meta")
+            .append_line(f"Model used: {escape_markdown(model_name)}"))
 
     if total_tokens := llm_response.metadata.get("total_tokens"):
-        result += f"\nToken usage: {total_tokens}"
+        llm_meta_builder.append_line(f"Token usage: {total_tokens}")
     
     if reasoning := llm_response.metadata.get("reasoning"):
         telegraph_url = post_to_telegraph(reasoning)
-        result += f"\n{get_md_link('Reasoning', telegraph_url)}" if telegraph_url else "\n\nUnable to create telegraph article, see logs."
+        result = get_md_link('Reasoning', telegraph_url) if telegraph_url else "Unable to create telegraph article, see logs."
+        llm_meta_builder.append_line(result)
 
-    return result
+    return llm_meta_builder.build()
 
 # todo make separate service
 def post_to_telegraph(reasoning: str) -> str:
