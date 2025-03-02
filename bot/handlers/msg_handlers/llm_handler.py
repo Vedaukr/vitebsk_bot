@@ -119,9 +119,9 @@ def post_to_telegraph(reasoning: str) -> str:
             'https://api.telegra.ph/createPage',
             data={
                 'access_token': settings['TELEGRAPH_TOKEN'],
-                'title': f'DS-REASONING-{reasoning[:15]}',
+                'title': f'REASONING-{reasoning[:15]}',
                 'content': json.dumps(content, ensure_ascii=False),
-                'author_name': "DS-vbot"
+                'author_name': "Reasoning-vbot"
             }
         )
         page_response.raise_for_status()

@@ -55,3 +55,29 @@ class AnthropicLlm(LlmModel):
             ]
         }
     
+
+# Updated version for thinking-supporting models
+class AnthropicThinkingLlm(AnthropicLlm):
+    
+    def __init__(self, model_name: str, is_vision_model: bool = True, thinking_budget: int = 2000):
+        self.thinking_budget = thinking_budget
+        super().__init__(model_name=model_name, is_vision_model=is_vision_model)
+
+    def _make_llm_request(self, messages: list[dict]) -> LlmResponse:
+        response = self.client.messages.create(
+            model=self.model_name,
+            max_tokens=default_settings["max_tokens"],
+            messages=messages,
+            thinking={
+                "type": "enabled",
+                "budget_tokens": self.thinking_budget
+            },
+        )
+
+        thinking_message = response.content[0].thinking
+        response_message = response.content[1].text
+        
+        total_tokens = response.usage.input_tokens + response.usage.output_tokens
+        metadata = LlmMetadata(total_tokens=total_tokens, reasoning=thinking_message)
+        
+        return LlmResponse(content=response_message, metadata=metadata)
