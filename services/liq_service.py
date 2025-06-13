@@ -296,7 +296,7 @@ class DotaService(LiquipediaService):
     
     @property
     def tournament_selector(self) -> str:
-        return 'tournament-text' 
+        return 'match-tournament' 
     
     @property
     def match_details_selector(self) -> str:
