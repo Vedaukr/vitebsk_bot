@@ -38,5 +38,5 @@ default_model_mapping["dsr"] = DeepseekLlm(model_name="deepseek-reasoner", is_vi
 default_model_mapping["deepseek"] = DeepseekLlm(model_name="deepseek-reasoner", is_vision_model=False)
 
 # grok
-default_model_mapping["grok"] = GrokLlm(model_name="grok-3-mini", is_vision_model=True, api_key=settings['GROK_API_KEY'], organization=None, base_url="https://api.x.ai/v1") 
-default_model_mapping["grok3"] = GrokLlm(model_name="grok-3", is_vision_model=True, api_key=settings['GROK_API_KEY'], organization=None, base_url="https://api.x.ai/v1")
+default_model_mapping["grok"] = GrokLlm(model_name="grok-3-mini", is_vision_model=False, api_key=settings['GROK_API_KEY'], organization=None, base_url="https://api.x.ai/v1") 
+default_model_mapping["grok3"] = GrokLlm(model_name="grok-3", is_vision_model=False, api_key=settings['GROK_API_KEY'], organization=None, base_url="https://api.x.ai/v1")
