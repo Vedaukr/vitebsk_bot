@@ -16,8 +16,14 @@ default_settings = {
 
 class OpenAiLlm(LlmModel):
     
-    def __init__(self, model_name: str, is_vision_model: bool = True, system_role: str = "system"):
-        self.client = OpenAI(api_key=OPENAI_TOKEN, organization=OPENAI_ORGANIZATION)
+    def __init__(self, 
+                 model_name: str, 
+                 is_vision_model: bool = True, 
+                 system_role: str = "system",
+                 api_key: str = OPENAI_TOKEN,
+                 organization: Optional[str] = OPENAI_ORGANIZATION,
+                 base_url: Optional[str] = None):
+        self.client = OpenAI(api_key=api_key, organization=organization, base_url=base_url)
         super().__init__(model_name, is_vision_model, system_role)
         
     @property
@@ -58,4 +64,16 @@ class OpenAiOSeriesLlm(OpenAiLlm):
             reasoning_effort=self.reasoning_effort,
             messages=messages,
             max_completion_tokens=int(default_settings["max_tokens"])
+        )
+    
+
+# Grok via openai
+class GrokLlm(OpenAiLlm):
+    
+    def _make_request(self, messages) -> ChatCompletion:
+        return self.client.chat.completions.create(
+            model=self.model_name,
+            messages=messages,
+            temperature=default_settings["temperature"],
+            max_tokens=int(default_settings["max_tokens"])
         )

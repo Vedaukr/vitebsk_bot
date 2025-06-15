@@ -1,7 +1,8 @@
 from services.llm.deepseek_llm import DeepseekLlm
 from services.llm.llm_model import LlmModel
-from services.llm.openai_llm import OpenAiLlm, OpenAiOSeriesLlm
+from services.llm.openai_llm import GrokLlm, OpenAiLlm, OpenAiOSeriesLlm
 from services.llm.anthropic_llm import AnthropicLlm, AnthropicThinkingLlm
+from settings import settings
 
 default_model_mapping: dict[str, LlmModel] = {}
 
@@ -35,3 +36,7 @@ default_model_mapping["sonnet37"] = AnthropicThinkingLlm(model_name="claude-3-7-
 default_model_mapping["ds"] = DeepseekLlm(model_name="deepseek-chat", is_vision_model=False) 
 default_model_mapping["dsr"] = DeepseekLlm(model_name="deepseek-reasoner", is_vision_model=False) 
 default_model_mapping["deepseek"] = DeepseekLlm(model_name="deepseek-reasoner", is_vision_model=False)
+
+# grok
+default_model_mapping["grok"] = GrokLlm(model_name="grok-3-mini", is_vision_model=True, api_key=settings['GROK_API_KEY'], organization=None, base_url="https://api.x.ai/v1") 
+default_model_mapping["grok3"] = GrokLlm(model_name="grok-3", is_vision_model=True, api_key=settings['GROK_API_KEY'], organization=None, base_url="https://api.x.ai/v1")
