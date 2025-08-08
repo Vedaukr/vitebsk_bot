@@ -8,7 +8,7 @@ OPENAI_TOKEN = settings['OPENAI_TOKEN']
 OPENAI_ORGANIZATION = settings['OPENAI_ORGANIZATION']
 
 default_settings = {
-    "max_tokens": 4000,
+    "max_tokens": 10000,
     "temperature": 0.75,
     "frequency_penalty": 0.4,
     "presence_penalty": 0.6,
