@@ -12,6 +12,8 @@ default_model_mapping["gpt"] = OpenAiLlm(model_name="gpt-4o")
 default_model_mapping["гпт"] = OpenAiLlm(model_name="gpt-4o") 
 default_model_mapping["gpt4"] = OpenAiLlm(model_name="gpt-4o") 
 default_model_mapping["гпт4"] = OpenAiLlm(model_name="gpt-4o") 
+default_model_mapping["gpt5"] = OpenAiOSeriesLlm(model_name="gpt-5-mini") 
+default_model_mapping["гпт5"] = OpenAiOSeriesLlm(model_name="gpt-5-mini") 
 
 # Cyrillic dups for o
 default_model_mapping["o1"] = OpenAiOSeriesLlm(model_name="o1-mini") 
