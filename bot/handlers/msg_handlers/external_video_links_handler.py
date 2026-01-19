@@ -14,7 +14,7 @@ reply_template = """
 ⚠️⚠️⚠️ ALERT ⚠️⚠️⚠️
 
 
-Potential bullshit from {}
+Potential bullshit from {0}
 
 
 ⚠️⚠️⚠️ ALERT ⚠️⚠️⚠️
@@ -34,6 +34,6 @@ def msg_contains_url(message: telebot.types.Message) -> bool:
 @continue_handling
 def handler(message: telebot.types.Message):
     if message.from_user.id in BLACKLIST:
-        reply_msg = reply_template.format(username= BLACKLIST[message.from_user.id])
+        reply_msg = reply_template.format(BLACKLIST[message.from_user.id])
         bot_instance.reply_to(message, reply_msg)
 
