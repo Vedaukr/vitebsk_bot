@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Callable
 from bot.bot_instance.bot import bot_instance
 from bot.handlers.shared import msg_starts_with_filter, tg_exception_handler
@@ -49,6 +50,11 @@ dota_subparser.add_argument('-twitch', help='Only matches that have twitch strea
 wf_subparser = subparsers.add_parser(WF_TRIGGERS[0], aliases=WF_TRIGGERS[1:])
 wf_subparser.add_argument('city', help='City name')
 wf_subparser.add_argument('date', help='Forecast date', nargs='*', default=None)
+
+
+logger = logging.getLogger(__name__)
+logger.info("bot handlers imported.")
+
 
 @bot_instance.message_handler(func=msg_starts_with_filter(("bot ", "бот ")))
 @tg_exception_handler

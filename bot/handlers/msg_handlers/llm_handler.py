@@ -22,6 +22,8 @@ MAX_CTX_SIZE = 10
 logger = logging.getLogger(__name__)
 global_llm_context = LlmUserContext()
 
+logger.info("LLM handlers imported.")
+
 @bot_instance.message_handler(func=lambda message: message.reply_to_message is not None, content_types=['text'])
 @tg_exception_handler
 def llm_reply_handler(message: telebot.types.Message):
