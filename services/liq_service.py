@@ -151,29 +151,28 @@ class LiquipediaService:
                 try:
                     game = {}
 
-                    team_left = match.find(class_='team-left')
+                    team_left = match.find(class_='match-info-header-opponent-left')
                     game['team1'] = team_left.get_text().strip()
                     tl_liq_link = team_left.find('a')
                     if tl_liq_link:
                         game['team1_liqlink'] = f"{self.base_url}{tl_liq_link.get('href')}"
 
-                    team_right = match.find(class_='team-right')
+                    team_right = match.find_all(class_='match-info-header-opponent')[1]
                     game['team2'] = team_right.get_text().strip()
                     tr_liq_link = team_right.find('a')
                     if tr_liq_link:
                         game['team2_liqlink'] = f"{self.base_url}{tr_liq_link.get('href')}"	
                     
-                    versus_block = match.find(class_='versus')
+                    versus_block = match.find(class_='match-info-header-scoreholder')
                     if versus_block:
                         game['versus'] = versus_block.get_text().strip()
                     
-                    match_details = 	match.find(class_=self.match_details_selector)
-                    tournament_div = match_details.find(class_=self.tournament_selector)
+                    tournament_div = match.find(class_='match-info-tournament')
                     game['tournament'] = tournament_div.get_text().strip()
                     game['tournament_link'] = f"{self.base_url}{tournament_div.find('a').get('href')}"
 
                     try:
-                        start_time_span = match_details.find(class_="timer-object")
+                        start_time_span = match.find(class_="timer-object")
                         if start_time_span:
                             data_timestamp = start_time_span.attrs.get('data-timestamp')
                             if data_timestamp:
@@ -183,7 +182,9 @@ class LiquipediaService:
                     except AttributeError as atr_ex:
                         logger.error(f"Attribute error in LiquipediaService: {atr_ex}")
                     
-                    game['stream_links'] = self.get_stream_links(match_details)
+                    
+                    match_links = match.find(class_="match-info-links")
+                    game['stream_links'] = self.get_stream_links(match_links)
                     game_info = GameInfo(**game)
                     games.append(game_info)	
                 
@@ -205,8 +206,8 @@ class LiquipediaService:
 
         return games
     
-    def get_stream_links(self, match_details) -> dict[str, str]:
-        filler_links = match_details.find_all('a')
+    def get_stream_links(self, match_links) -> dict[str, str]:
+        filler_links = match_links.find_all('a')
         stream_links_tags = [link for link in filler_links if 'Special:Stream' in link.get('href')]
         if stream_links_tags:
             stream_links: dict[str, list[str]] = {}
@@ -283,7 +284,7 @@ class CsService(LiquipediaService):
     
     def _get_matches(self) -> ResultSet[Any]:
         soup, __ = self.parse('Liquipedia:Matches')
-        return soup.find_all('table', class_='infobox_matches_content')
+        return soup.find_all('div', class_='match-info')
         
     
 class DotaService(LiquipediaService):
@@ -304,7 +305,7 @@ class DotaService(LiquipediaService):
     
     def _get_matches(self) -> ResultSet[Any]:
         soup, __ = self.parse('Liquipedia:Upcoming_and_ongoing_matches')
-        return soup.find_all('div', class_='match')
+        return soup.find_all('div', class_='match-info')
     
     
     
