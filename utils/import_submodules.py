@@ -1,4 +1,7 @@
 import importlib, sys, pkgutil
+import logging
+
+logger = logging.getLogger(__name__)
 
 def import_submodules(package, recursive=True):
     """ Import all submodules of a module, recursively, including subpackages
@@ -14,7 +17,8 @@ def import_submodules(package, recursive=True):
         full_name = package.__name__ + '.' + name
         try:
             results[full_name] = importlib.import_module(full_name)
-        except ModuleNotFoundError:
+        except ModuleNotFoundError as module_error:
+            logger.error(f"Module not found: {module_error}")
             continue
         if recursive and is_pkg:
             results.update(import_submodules(full_name))
