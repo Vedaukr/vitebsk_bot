@@ -1,19 +1,14 @@
 import logging
-from typing import Any, Callable
+from typing import Callable
 from bot.bot_instance.bot import bot_instance
 from bot.handlers.shared import msg_starts_with_filter, tg_exception_handler
 from bot.handlers.configs.search_config import default_search_resolver
 from bot.handlers.msg_handlers.shared import get_prompt
-from services.owm_service import OwmService
 from services.search_service import SearchService
 from services.liq_service import CsService, DotaService, GameInfo, LiquipediaService
-from services.tz_service import TzService
-from utils.md_utils import escape_markdown
-import dateutil
 import telebot, datetime
 import argparse
 import funcy as fy
-import pytz
 import csv
 
 CS_TRIGGERS = ("кс", "cs", "cs")
@@ -24,8 +19,6 @@ WF_TRIGGERS = ("wf", "weather", "погода")
 search_service = SearchService()
 cs_service = CsService("Telegram fun bot")
 dota_service = DotaService("Telegram fun bot")
-tz_service = TzService()
-wf_service = OwmService()
 
 parser = argparse.ArgumentParser(prog='bot')
 subparsers = parser.add_subparsers(dest='command')
@@ -45,12 +38,6 @@ dota_subparser.add_argument('-tournament', help='Search by tournament', default=
 dota_subparser.add_argument('-today', help='Only matches that occur today', default=False, action=argparse.BooleanOptionalAction)
 dota_subparser.add_argument('-yt', help='Only matches that have youtube stream', default=False, action=argparse.BooleanOptionalAction)
 dota_subparser.add_argument('-twitch', help='Only matches that have twitch stream', default=False, action=argparse.BooleanOptionalAction)
-
-# wf
-wf_subparser = subparsers.add_parser(WF_TRIGGERS[0], aliases=WF_TRIGGERS[1:])
-wf_subparser.add_argument('city', help='City name')
-wf_subparser.add_argument('date', help='Forecast date', nargs='*', default=None)
-
 
 logger = logging.getLogger(__name__)
 logger.info("bot handlers imported.")
@@ -85,9 +72,6 @@ def bot_cmd_handler(message: telebot.types.Message):
             
         if args.command in DOTA_TRIGGERS:
             response = handle_liq_prompt(dota_service, args, arg_prompt)
-
-        if args.command in WF_TRIGGERS:
-            response = handle_wf_prompt(args)
         
         bot_instance.reply_to(message, response, parse_mode="MarkdownV2", disable_web_page_preview=True)
 
@@ -135,59 +119,3 @@ def build_filters(args: argparse.Namespace, prompt: str) -> list[Callable[[GameI
             filters.append(fy.any_fn(FILTER_TEAM, FILTER_TOURNAMENT))
 
     return filters
-
-def handle_wf_prompt(args: argparse.Namespace) -> str:
-    if not args.date:
-        observation = wf_service.get_weather_at_place(args.city)
-        loc = observation.location
-        city = f"{loc.name}, {loc.country}"
-        target_tz = pytz.timezone(tz_service.get_timezone(loc.lat, loc.lon))
-        if observation:
-            return get_wf_response([observation.weather], city, target_tz)
-        else:
-            return "Nothing found"
-    
-    prompt_date = parse_wf_date(" ".join(args.date))
-    forecaster = wf_service.get_weather_forecast(args.city)
-    loc = forecaster.forecast.location
-    city = f"{loc.name}, {loc.country}"
-    target_tz = pytz.timezone(tz_service.get_timezone(loc.lat, loc.lon))
-    weathers = list(filter(lambda w: datetime.datetime.fromtimestamp(w.ref_time).date() == prompt_date, forecaster.forecast.weathers))
-    if weathers:
-        return get_wf_response(weathers, city, target_tz)
-    else:
-        return "Nothing found"
-    
-def get_wf_response(weathers: list[Any], city: str, target_tz: Any) -> str:
-    full_info = len(weathers) == 1
-    date = datetime.datetime.fromtimestamp(weathers[0].ref_time).date()
-    result = f"Weather forecast in {city} for {date.strftime('%d %b %Y')}:\n"
-
-    for weather in weathers:
-        time = datetime.datetime.fromtimestamp(weather.ref_time).astimezone(target_tz)
-        result += f"{time.strftime('%H:%M')}\n"
-        result += f"Status: {weather.detailed_status}\n"
-
-        temperature = weather.temperature('celsius')
-        result += f"Temperature (feels like): {temperature['temp']} ({temperature['feels_like']})\n"
-        result += f"Precipitation probability: {weather.precipitation_probability if weather.precipitation_probability else 'no info'}\n"
-        result += f"Cloudiness: {weather.clouds}%\n"
-        result += f"Wind speed: {weather.wind().get('speed', 0)} m/s\n"
-
-        if full_info:
-            result += f"Humidity: {weather.humidity}%\n"
-            srise_time = datetime.datetime.fromtimestamp(weather.srise_time).astimezone(target_tz)
-            sset_time = datetime.datetime.fromtimestamp(weather.sset_time).astimezone(target_tz)
-            result += f"Sunrise: {srise_time.strftime('%H:%M')}\n"
-            result += f"Sunset: {sset_time.strftime('%H:%M')}\n"
-        
-        result += '\n'
-
-    return escape_markdown(result)
-
-def parse_wf_date(date_str: str) -> datetime.date:
-    if date_str == 'today':
-        return datetime.datetime.today().date()
-    if date_str == 'tomorrow':
-        return (datetime.datetime.today() + datetime.timedelta(days=1)).date()
-    return dateutil.parser.parse(date_str).date()
