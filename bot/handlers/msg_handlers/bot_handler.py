@@ -1,6 +1,6 @@
 from typing import Any, Callable
 from bot.bot_instance.bot import bot_instance
-from bot.handlers.shared import tg_exception_handler
+from bot.handlers.shared import msg_starts_with_filter, tg_exception_handler
 from bot.handlers.configs.search_config import default_search_resolver
 from bot.handlers.msg_handlers.shared import get_prompt
 from services.owm_service import OwmService
@@ -50,7 +50,7 @@ wf_subparser = subparsers.add_parser(WF_TRIGGERS[0], aliases=WF_TRIGGERS[1:])
 wf_subparser.add_argument('city', help='City name')
 wf_subparser.add_argument('date', help='Forecast date', nargs='*', default=None)
 
-@bot_instance.message_handler(regexp=r"^(\bbot\b|\bбот\b)\s.+")
+@bot_instance.message_handler(func=msg_starts_with_filter(("bot ", "бот ")))
 @tg_exception_handler
 def bot_cmd_handler(message: telebot.types.Message):
     bot_reply = bot_instance.reply_to(message, "handling...")
